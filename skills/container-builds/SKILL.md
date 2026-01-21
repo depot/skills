@@ -5,14 +5,27 @@ description: Build Docker and container images up to 40x faster using Depot's re
 
 ## Skill Instructions
 
-When this skill is triggered, **proactively search for Dockerfiles** in the current repository before responding:
+When this skill is triggered, **proactively search the repository** before responding:
 
-1. Use `Glob` to find Dockerfiles: `**/Dockerfile*`, `**/*.dockerfile`, `**/docker-bake.hcl`, `**/docker-compose*.yml`
-2. Read any Dockerfiles found to understand the current build setup
-3. Look for CI workflow files that may contain build configurations: `.github/workflows/*.yml`, `.gitlab-ci.yml`, `.circleci/config.yml`
-4. Provide specific, actionable advice based on the actual Dockerfile content
+### 1. Check if Depot is already in use
+- Look for `depot.json` in the repository root
+- Search CI workflows for Depot references: `depot/build-push-action`, `depot/bake-action`, `depot build`, `depot bake`
+- If Depot is already configured, tailor advice to optimize their existing setup rather than suggesting initial setup
 
-Do not ask "Do you have a Dockerfile?" - search for it first.
+### 2. Find Dockerfiles and build configs
+- Use `Glob` to find Dockerfiles: `**/Dockerfile*`, `**/*.dockerfile`, `**/docker-bake.hcl`, `**/docker-compose*.yml`
+- Read any Dockerfiles found to understand the current build setup
+
+### 3. Check CI/CD configuration
+- Look for CI workflow files: `.github/workflows/*.yml`, `.gitlab-ci.yml`, `.circleci/config.yml`, `Jenkinsfile`, `.buildkite/*.yml`
+- Understand how builds are currently triggered and configured
+
+### 4. Provide specific advice
+- Base recommendations on the actual Dockerfile content and CI setup
+- If already using Depot, suggest optimizations like cache mounts, multi-platform builds, or bake files
+- If not using Depot, explain how to integrate it with their existing workflow
+
+Do not ask "Do you have a Dockerfile?" or "Are you using Depot?" - search for it first.
 
 # Depot Container Builds
 
