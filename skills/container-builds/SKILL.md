@@ -1,5 +1,5 @@
 ---
-name: depot
+name: container-builds
 description: Build Docker and container images up to 40x faster using Depot's remote builders with automatic layer caching. Use when users want to build container images, create Dockerfiles, set up CI/CD for container builds, optimize Docker build performance, or troubleshoot slow builds. Triggers include "docker build", "container image", "Dockerfile", "multi-platform build", "arm64 build", "build cache", "layer caching", "container layer caching", "faster container builds", "speed up docker build", "Dockerfile tips", "Dockerfile best practices", "optimize Dockerfile", "docker build slow", "container build optimization", slow builds, or CI/CD container pipelines.
 ---
 
