@@ -3,6 +3,17 @@ name: container-builds
 description: Build Docker and container images up to 40x faster using Depot's remote builders with automatic layer caching. Use when users want to build container images, create Dockerfiles, set up CI/CD for container builds, optimize Docker build performance, or troubleshoot slow builds. Triggers include "docker build", "container image", "Dockerfile", "multi-platform build", "arm64 build", "build cache", "layer caching", "container layer caching", "faster container builds", "speed up docker build", "Dockerfile tips", "Dockerfile best practices", "optimize Dockerfile", "docker build slow", "container build optimization", slow builds, or CI/CD container pipelines.
 ---
 
+## Skill Instructions
+
+When this skill is triggered, **proactively search for Dockerfiles** in the current repository before responding:
+
+1. Use `Glob` to find Dockerfiles: `**/Dockerfile*`, `**/*.dockerfile`, `**/docker-bake.hcl`, `**/docker-compose*.yml`
+2. Read any Dockerfiles found to understand the current build setup
+3. Look for CI workflow files that may contain build configurations: `.github/workflows/*.yml`, `.gitlab-ci.yml`, `.circleci/config.yml`
+4. Provide specific, actionable advice based on the actual Dockerfile content
+
+Do not ask "Do you have a Dockerfile?" - search for it first.
+
 # Depot Container Builds
 
 Depot provides remote container builders with persistent layer caching on NVMe SSDs, native multi-platform support (no QEMU), and seamless CI/CD integration.
