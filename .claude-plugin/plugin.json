@@ -1,0 +1,5 @@
+{
+  "name": "depot",
+  "description": "Build Docker and container images faster with Depot",
+  "version": "1.0.0"
+}
