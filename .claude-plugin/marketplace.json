@@ -1,0 +1,13 @@
+{
+  "name": "depot-plugins",
+  "owner": {
+    "name": "Depot"
+  },
+  "plugins": [
+    {
+      "name": "container-build-best-practices-plugin",
+      "source": "./plugins/container-build-best-practices-plugin",
+      "description": "Adds a /container-build-best-practices skill for optimizing container builds"
+    }
+  ]
+}

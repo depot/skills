@@ -1,0 +1,5 @@
+{
+  "name": "container-build-best-practices-plugin",
+  "description": "Adds a /container-build-best-practices skill for optimizing container builds",
+  "version": "1.0.0"
+}
