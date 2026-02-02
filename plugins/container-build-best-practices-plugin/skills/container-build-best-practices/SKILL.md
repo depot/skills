@@ -1,6 +1,6 @@
 ---
 name: container-build-best-practices
-description: Build Docker and container images up to 40x faster using Depot's remote builders with automatic layer caching. Use when users want to build container images, create Dockerfiles, set up CI/CD for container builds, optimize Docker build performance, or troubleshoot slow builds. Triggers include "docker build", "container build", "container build optimization", "optimize container build", "optimize container builds", "container image", "Dockerfile", "multi-platform build", "arm64 build", "build cache", "layer caching", "container layer caching", "faster container builds", "speed up docker build", "Dockerfile tips", "Dockerfile best practices", "optimize Dockerfile", "docker build slow", slow builds, or CI/CD container pipelines.
+description: Build Docker and container images up to 40x faster using Depot's remote builders with automatic layer caching. Use when users want to build container images, create Dockerfiles, set up CI/CD for container builds, optimize Docker build performance, or troubleshoot slow builds. Triggers include "docker build", "container build", "container build optimization", "optimize container build", "optimize container builds", "container image", "Dockerfile", "multi-platform build", "arm64 build", "build cache", "layer caching", "container layer caching", "faster container builds", "speed up docker build", "Dockerfile tips", "Dockerfile best practices", "optimize Dockerfile", "docker build slow", slow builds, CI/CD container pipelines, "depot login", "setup depot", "install depot", "authenticate depot", "build failed", "failed build", "build logs", "pull logs", "debug build", or "failed step".
 ---
 
 ## Skill Instructions
@@ -35,6 +35,7 @@ Do not ask "Do you have a Dockerfile?" or "Are you using Depot?" - search for it
 
 Read individual rule files for targeted guidance:
 
+- [rules/setup.md](rules/setup.md) - Install CLI, authenticate with `depot login`, initialize projects, CI/CD auth setup
 - [rules/core-build-flow.md](rules/core-build-flow.md) - CLI usage, project wiring, build/load/push, registry, auth
 - [rules/dockerfile-tips.md](rules/dockerfile-tips.md) - Cache mounts, layer ordering, multi-stage builds
 - [rules/optimal-dockerfiles.md](rules/optimal-dockerfiles.md) - Language-specific optimal Dockerfiles and cache mounts
@@ -42,6 +43,7 @@ Read individual rule files for targeted guidance:
 - [rules/bake-compose.md](rules/bake-compose.md) - Bake and Docker Compose workflows
 - [rules/registries.md](rules/registries.md) - Depot Registry and private registry access
 - [rules/observability.md](rules/observability.md) - Build logs, metrics, and performance diagnosis
+- [rules/build-debugging.md](rules/build-debugging.md) - Debug failed builds, fetch logs via API
 - [rules/troubleshooting.md](rules/troubleshooting.md) - Slow builds, cache misses, common errors
 
 ## Reference Documentation

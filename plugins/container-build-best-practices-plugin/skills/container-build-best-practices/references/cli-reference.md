@@ -162,7 +162,8 @@ depot configure-docker --uninstall
 
 | Variable | Description |
 |----------|-------------|
-| `DEPOT_TOKEN` | Authentication token |
+| `DEPOT_TOKEN` | Authentication token for CLI/CI builds |
+| `DEPOT_API_TOKEN` | API token for SDK calls (org-scoped) |
 | `DEPOT_PROJECT_ID` | Default project ID |
 | `DEPOT_NO_SUMMARY_LINK` | Suppress build summary links |
 
@@ -172,3 +173,43 @@ depot configure-docker --uninstall
 2. `DEPOT_PROJECT_ID` environment variable
 3. Interactive prompt (if terminal)
 4. `depot.json` in current directory
+
+## Build Service API
+
+For programmatic access to builds, use the Depot Build Service API with an **API token** (created in Organization Settings → API Tokens).
+
+### Available Methods
+
+| Method | Description |
+|--------|-------------|
+| `CreateBuild` | Initiate a new image build within a project |
+| `FinishBuild` | Mark a build as complete and clean up resources |
+| `GetBuildSteps` | Retrieve construction steps for a build |
+| `GetBuildStepLogs` | Fetch output logs from individual build steps |
+
+### SDKs
+
+- **Node.js:** `@depot/api` package with `@connectrpc/connect`
+- **Go:** `github.com/depot/api/go` with `connectrpc.com/connect`
+
+### Example: Fetch Build Steps
+
+```typescript
+import {createPromiseClient} from '@connectrpc/connect';
+import {createConnectTransport} from '@connectrpc/connect-node';
+import {BuildService} from '@depot/api/depot/build/v1/build_connect';
+
+const transport = createConnectTransport({
+  baseUrl: 'https://api.depot.dev',
+  httpVersion: '2',
+});
+
+const client = createPromiseClient(BuildService, transport);
+
+const response = await client.getBuildSteps(
+  {buildId: 'BUILD_ID', projectId: 'PROJECT_ID', pageSize: 100},
+  {headers: {Authorization: `Bearer ${process.env.DEPOT_API_TOKEN}`}},
+);
+```
+
+See [rules/build-debugging.md](../rules/build-debugging.md) for complete examples of debugging failed builds via the API.
