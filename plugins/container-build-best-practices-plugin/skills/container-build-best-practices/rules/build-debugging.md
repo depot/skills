@@ -5,12 +5,26 @@ metadata:
   tags: debug, logs, failed, api, steps, errors
 ---
 
-## Get Build ID
+## Find Projects and Builds
 
-Find the build ID from:
-- Build output: `Build: https://depot.dev/orgs/<org>/projects/<project>/builds/<build-id>`
-- Metadata file: `depot build --metadata-file=build.json` then `jq -r '."depot.build"' build.json`
-- Build list: `depot list builds --project <project-id>`
+**List all projects in your organization:**
+```bash
+depot projects list
+```
+
+**List builds for a specific project:**
+```bash
+depot list builds --project <project-id>
+```
+
+**Get build ID from build output:**
+- Look for: `Build: https://depot.dev/orgs/<org>/projects/<project>/builds/<build-id>`
+
+**Get build ID from metadata file:**
+```bash
+depot build --metadata-file=build.json -t myapp:latest .
+jq -r '."depot.build"' build.json
+```
 
 ## Debug via Web UI
 
