@@ -10,11 +10,13 @@ metadata:
 **List all projects in your organization:**
 ```bash
 depot projects list
+depot projects list --output json  # JSON output
 ```
 
 **List builds for a specific project:**
 ```bash
 depot list builds --project <project-id>
+depot list builds --project <project-id> --output json  # JSON output
 ```
 
 **Get build ID from build output:**
