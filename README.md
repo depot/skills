@@ -1,49 +1,26 @@
-# Depot AI Agent Skills & Plugins
+# Depot AI Agent Skills
 
-Skills and plugins that teach AI coding agents how to use [Depot](https://depot.dev). Install them into your agent of choice so it can generate correct Depot CLI commands, configurations, and workflows.
+Skills that teach AI coding agents how to use [Depot](https://depot.dev). Install them into your agent of choice so it can generate correct Depot CLI commands, configurations, and workflows.
 
 ## What's in this repo
 
-### Skills
-
-Individual SKILL.md files covering each Depot product area:
-
 | Skill | Directory | Description |
 |-------|-----------|-------------|
-| **Container Builds** | [`depot-container-builds/`](depot-container-builds/SKILL.md) | `depot build`, `depot bake`, multi-platform builds, caching, Depot Registry, migration from Docker |
-| **GitHub Actions Runners** | [`depot-github-runners/`](depot-github-runners/SKILL.md) | Managed GHA runners, runner labels/sizes, caching, Dagger, Dependabot, egress filtering |
-| **Depot CI** | [`depot-ci/`](depot-ci/SKILL.md) | Depot CI beta, `depot ci migrate`, secrets/vars, running workflows, GHA compatibility |
-| **General** | [`depot-general/`](depot-general/SKILL.md) | CLI installation, authentication (tokens, OIDC), project setup, org management, API, pricing |
-
-### Plugins
-
-Packaged plugins that bundle skills for specific agent platforms:
-
-| Plugin | Directory | Description |
-|--------|-----------|-------------|
-| **Container Build Best Practices** | [`plugins/container-build-best-practices-plugin/`](plugins/container-build-best-practices-plugin/) | Comprehensive container build guide — Dockerfiles, CI/CD, troubleshooting, observability |
+| **Container Builds** | [`skills/depot-container-builds/`](skills/depot-container-builds/SKILL.md) | `depot build`, `depot bake`, multi-platform builds, caching, Depot Registry, migration from Docker |
+| **GitHub Actions Runners** | [`skills/depot-github-runners/`](skills/depot-github-runners/SKILL.md) | Managed GHA runners, runner labels/sizes, caching, Dagger, Dependabot, egress filtering |
+| **Depot CI** | [`skills/depot-ci/`](skills/depot-ci/SKILL.md) | Depot CI beta, `depot ci migrate`, secrets/vars, running workflows, GHA compatibility |
+| **General** | [`skills/depot-general/`](skills/depot-general/SKILL.md) | CLI installation, authentication (tokens, OIDC), project setup, org management, API, pricing |
 
 ## Installation
 
 ### Claude Code
 
-Install the container build best practices plugin directly:
+Add the marketplace and install the Depot plugin:
 
 ```bash
-claude plugin add --from depot/skills/plugins/container-build-best-practices-plugin
+claude plugin marketplace add depot/skills
+claude plugin install depot@depot-skills
 ```
-
-Or copy individual skill folders into your project:
-
-```bash
-mkdir -p .claude/skills
-cp -r depot-container-builds .claude/skills/
-cp -r depot-github-runners .claude/skills/
-cp -r depot-ci .claude/skills/
-cp -r depot-general .claude/skills/
-```
-
-You can also upload individual SKILL.md files as user skills in Claude.ai project settings.
 
 ### Cursor
 
@@ -51,10 +28,10 @@ Copy SKILL.md files into `.cursor/rules/` as `.mdc` files:
 
 ```bash
 mkdir -p .cursor/rules
-cp depot-container-builds/SKILL.md .cursor/rules/depot-container-builds.mdc
-cp depot-github-runners/SKILL.md .cursor/rules/depot-github-runners.mdc
-cp depot-ci/SKILL.md .cursor/rules/depot-ci.mdc
-cp depot-general/SKILL.md .cursor/rules/depot-general.mdc
+cp skills/depot-container-builds/SKILL.md .cursor/rules/depot-container-builds.mdc
+cp skills/depot-github-runners/SKILL.md .cursor/rules/depot-github-runners.mdc
+cp skills/depot-ci/SKILL.md .cursor/rules/depot-ci.mdc
+cp skills/depot-general/SKILL.md .cursor/rules/depot-general.mdc
 ```
 
 ### AGENTS.md
@@ -66,10 +43,10 @@ Reference skills from your repository's `AGENTS.md` file:
 
 This project uses Depot for container builds and CI. See the following skill files for reference:
 
-- [Container Builds](./depot-container-builds/SKILL.md)
-- [GitHub Actions Runners](./depot-github-runners/SKILL.md)
-- [Depot CI](./depot-ci/SKILL.md)
-- [General Setup](./depot-general/SKILL.md)
+- [Container Builds](./skills/depot-container-builds/SKILL.md)
+- [GitHub Actions Runners](./skills/depot-github-runners/SKILL.md)
+- [Depot CI](./skills/depot-ci/SKILL.md)
+- [General Setup](./skills/depot-general/SKILL.md)
 ```
 
 ### OpenAI / Codex

@@ -1,0 +1,5 @@
+{
+  "name": "depot",
+  "description": "Depot skills for container builds, GitHub Actions runners, Depot CI, and general CLI/auth setup",
+  "version": "1.0.0"
+}
