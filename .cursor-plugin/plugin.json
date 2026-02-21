@@ -1,0 +1,30 @@
+{
+  "name": "depot-skills",
+  "displayName": "Depot container build, github actions, and CI skills",
+  "version": "1.0.0",
+  "description": "Depot skills for container builds, GitHub Actions runners, Depot CI, and general CLI/auth setup",
+  "author": {
+    "name": "Depot"
+  },
+  "publisher": "Depot",
+  "homepage": "https://github.com/depot/skills",
+  "repository": "https://github.com/depot/skills",
+  "license": "MIT",
+  "keywords": [
+    "ci/cd",
+    "docker",
+    "container build",
+    "github actions",
+    "depot",
+    "continuous integration"
+  ],
+  "category": "developer-tools",
+  "tags": [
+    "ci/cd",
+    "docker",
+    "github actions",
+    "builds",
+    "continous integration"
+  ],
+  "skills": "./skills/"
+}
