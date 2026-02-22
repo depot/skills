@@ -1,4 +1,4 @@
-# Depot AI Agent Skills
+# Depot Skills
 
 Skills that teach AI coding agents how to use [Depot](https://depot.dev). Install them into your agent of choice so it can generate correct Depot CLI commands, configurations, and workflows.
 
@@ -22,9 +22,37 @@ claude plugin marketplace add depot/skills
 claude plugin install depot@depot-skills
 ```
 
+### Codex
+
+Install all Depot skills into Codex's local skills directory (`$CODEX_HOME/skills`, usually `~/.codex/skills`):
+
+```bash
+mkdir -p "$HOME/.codex/skills"
+cp -R skills/depot-container-builds "$HOME/.codex/skills/depot-container-builds"
+cp -R skills/depot-github-runners "$HOME/.codex/skills/depot-github-runners"
+cp -R skills/depot-ci "$HOME/.codex/skills/depot-ci"
+cp -R skills/depot-general "$HOME/.codex/skills/depot-general"
+```
+
+Then reference them from your repo's `AGENTS.md` so Codex can discover and use them in this workspace:
+
+```markdown
+## Skills
+- depot-container-builds: (file: ~/.codex/skills/depot-container-builds/SKILL.md)
+- depot-github-runners: (file: ~/.codex/skills/depot-github-runners/SKILL.md)
+- depot-ci: (file: ~/.codex/skills/depot-ci/SKILL.md)
+- depot-general: (file: ~/.codex/skills/depot-general/SKILL.md)
+```
+
 ### Cursor
 
-Copy SKILL.md files into `.cursor/rules/` as `.mdc` files:
+Install the Depot plugin from the Cursor Marketplace:
+
+1. In Cursor chat, run `/add-plugin`.
+2. Search for **Depot Skills** (or enter `depot/skills`).
+3. Install the plugin.
+
+Manual fallback: install as project rules by copying each `SKILL.md` into `.cursor/rules/` as an `.mdc` file:
 
 ```bash
 mkdir -p .cursor/rules
@@ -33,6 +61,8 @@ cp skills/depot-github-runners/SKILL.md .cursor/rules/depot-github-runners.mdc
 cp skills/depot-ci/SKILL.md .cursor/rules/depot-ci.mdc
 cp skills/depot-general/SKILL.md .cursor/rules/depot-general.mdc
 ```
+
+After manual install, open Cursor Settings -> Rules and verify these files are enabled for the workspace.
 
 ### AGENTS.md
 
@@ -48,10 +78,6 @@ This project uses Depot for container builds and CI. See the following skill fil
 - [Depot CI](./skills/depot-ci/SKILL.md)
 - [General Setup](./skills/depot-general/SKILL.md)
 ```
-
-### OpenAI / Codex
-
-Include the contents of relevant SKILL.md files in your custom instructions or system prompt. For Codex CLI, place skill files in your project and reference them in your configuration.
 
 ## Documentation
 
