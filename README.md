@@ -13,6 +13,14 @@ Skills that teach AI coding agents how to use [Depot](https://depot.dev). Instal
 
 ## Installation
 
+### skills.sh
+
+```bash
+npx skills add depot/skills
+```
+
+See [skills.sh](https://skills.sh) for more info.
+
 ### Claude Code
 
 Add the marketplace and install the Depot plugin:
