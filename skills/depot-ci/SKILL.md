@@ -139,6 +139,51 @@ depot ci status <run-id>
 depot ci logs <attempt-id>
 ```
 
+## Listing Runs and Triage Flow
+
+`depot ci run list` is the primary entrypoint for debugging active/recent CI activity across workflows.
+
+```bash
+# List runs (defaults to queued + running)
+depot ci run list
+
+# Filter by status (repeatable)
+depot ci run list --status failed
+depot ci run list --status finished --status failed
+
+# Limit number of results
+depot ci run list -n 5
+
+# Machine-readable output for tooling/agents
+depot ci run list --output json
+```
+
+### `run list` flags
+
+|Flag             |Description                                                                 |
+|-----------------|----------------------------------------------------------------------------|
+|`-n, --n <int>`  |Number of runs to return (default `50`)                                    |
+|`--status <name>`|Filter by status; repeatable: `queued`, `running`, `finished`, `failed`, `cancelled`|
+|`-o, --output`   |Output format (`json`)                                                      |
+|`--token <token>`|Depot API token                                                             |
+
+### Stitch with status/logs for debugging
+
+Use these commands in sequence:
+
+1. `depot ci run list --status failed -n 10` to identify suspect run IDs.
+1. `depot ci status <run-id>` to expand the run into workflow/job/attempt hierarchy.
+1. `depot ci logs <attempt-id>` to pull logs for the failing attempt.
+
+For automation, start from JSON and then select IDs:
+
+```bash
+# Inspect response shape before writing jq filters
+depot ci run list --output json | jq '.'
+```
+
+Then map selected run IDs into `depot ci status`, and attempt IDs into `depot ci logs`.
+
 ## Compatibility with GitHub Actions
 
 ### Supported
