@@ -22,20 +22,7 @@ Security default: never execute downloaded scripts directly (`curl ... | sh`). D
 # macOS (Homebrew)
 brew install depot/tap/depot
 
-# Linux / CI (install script, reviewed before execution)
-curl -fsSL -o /tmp/depot-install-cli.sh https://depot.dev/install-cli.sh
-less /tmp/depot-install-cli.sh
-sh /tmp/depot-install-cli.sh
-
-# Specific version
-curl -fsSL -o /tmp/depot-install-cli.sh https://depot.dev/install-cli.sh
-less /tmp/depot-install-cli.sh
-sh /tmp/depot-install-cli.sh -s 2.96.2
-
-# Custom install directory
-curl -fsSL -o /tmp/depot-install-cli.sh https://depot.dev/install-cli.sh
-less /tmp/depot-install-cli.sh
-DEPOT_INSTALL_DIR=/usr/local/bin sh /tmp/depot-install-cli.sh
+# Linux — see https://depot.dev/docs/cli/installation for all methods
 
 # Proto version manager
 proto plugin add depot "https://raw.githubusercontent.com/depot/cli/refs/heads/main/proto.yaml"
