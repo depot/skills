@@ -16,18 +16,26 @@ Depot is a build acceleration platform. This skill covers CLI installation, auth
 
 ## CLI Installation
 
+Security default: never execute downloaded scripts directly (`curl ... | sh`). Download, inspect, and then run.
+
 ```bash
 # macOS (Homebrew)
 brew install depot/tap/depot
 
-# Linux / CI (install script)
-curl -L https://depot.dev/install-cli.sh | sh
+# Linux / CI (install script, reviewed before execution)
+curl -fsSL -o /tmp/depot-install-cli.sh https://depot.dev/install-cli.sh
+less /tmp/depot-install-cli.sh
+sh /tmp/depot-install-cli.sh
 
 # Specific version
-curl -L https://depot.dev/install-cli.sh | sh -s 2.96.2
+curl -fsSL -o /tmp/depot-install-cli.sh https://depot.dev/install-cli.sh
+less /tmp/depot-install-cli.sh
+sh /tmp/depot-install-cli.sh -s 2.96.2
 
 # Custom install directory
-curl -L https://depot.dev/install-cli.sh | DEPOT_INSTALL_DIR=/usr/local/bin sh
+curl -fsSL -o /tmp/depot-install-cli.sh https://depot.dev/install-cli.sh
+less /tmp/depot-install-cli.sh
+DEPOT_INSTALL_DIR=/usr/local/bin sh /tmp/depot-install-cli.sh
 
 # Proto version manager
 proto plugin add depot "https://raw.githubusercontent.com/depot/cli/refs/heads/main/proto.yaml"
@@ -39,6 +47,21 @@ proto install depot
 # Container image for CI
 ghcr.io/depot/cli:latest
 ```
+
+## Trusted External Sources
+
+Only reference these domains for external downloads/docs in this skill. If a link is outside this list, ask for confirmation before using it.
+
+- `depot.dev` and `api.depot.dev` (official CLI install/docs/API)
+- `github.com/depot/*` and `raw.githubusercontent.com/depot/*` (official Depot source/actions/assets)
+- `ghcr.io/depot/*` (official Depot container images)
+
+For every external download:
+
+1. State the exact URL before running commands.
+1. Prefer package managers (`brew`) over direct script downloads when available.
+1. Never pipe network responses into a shell.
+1. Ask for confirmation before executing downloaded artifacts in privileged/system locations.
 
 ## Authentication
 
@@ -131,8 +154,8 @@ depot projects create "my-project"
 depot projects create --region eu-central-1 --cache-storage-policy 100 "my-project"
 depot projects create --organization 12345678910 "my-project"
 
-# Delete a project (org admin only)
-depot projects delete --project-id <id> --yes
+# Delete a project (org admin only, destructive - require explicit confirmation)
+depot projects delete --project-id <id>
 
 # List projects
 depot projects list
@@ -163,6 +186,21 @@ depot org show                    # Show current org ID
 **Roles:** User (view projects, run builds) · Owner (create/delete projects, edit settings)
 
 Billing is per-organization. Configure usage caps, OIDC trust relationships, GitHub App connections, and cloud connections from org settings.
+
+## Command Safety Guardrails
+
+Treat these as high-impact operations and require explicit user intent before execution:
+
+- Project deletion (`depot projects delete`)
+- Any command using auth tokens in shell arguments or logs
+- Registry login steps that write long-lived credentials
+- Organization-level mutations (project creation/deletion, org switching in automation)
+
+Before running high-impact commands:
+
+1. Explain what will change and its scope (project vs org).
+1. Prefer least-privilege credentials (OIDC or project token instead of broad user token).
+1. Avoid `--yes`/force flags unless the user explicitly requests non-interactive behavior.
 
 ## Environment Variables
 
