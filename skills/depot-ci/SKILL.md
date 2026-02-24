@@ -50,8 +50,8 @@ Your `.github/` directory is untouched — workflows run in both GitHub and Depo
 
 ```bash
 depot ci migrate --yes \
-  --secret NPM_TOKEN=npm_abc123 \
-  --secret DATABASE_URL=postgres://... \
+  --secret NPM_TOKEN=$NPM_TOKEN \
+  --secret DATABASE_URL=$DATABASE_URL \
   --var SERVICE_NAME=api \
   --org my-org-id
 ```
@@ -76,7 +76,7 @@ Create `.depot/workflows/` and `.depot/actions/` directories manually. Copy work
 ```bash
 # Add (prompts for value securely if --value omitted)
 depot ci secrets add SECRET_NAME
-depot ci secrets add SECRET_NAME --value "my-secret-value" --description "NPM auth token"
+depot ci secrets add SECRET_NAME --value "$NPM_TOKEN" --description "NPM auth token"
 
 # List (names and metadata only, no values)
 depot ci secrets list
@@ -87,20 +87,17 @@ depot ci secrets remove SECRET_NAME
 depot ci secrets remove SECRET_NAME --force  # Skip confirmation
 ```
 
-### Secrets via API
+## Credential Safety Guardrails
 
-```bash
-curl -X POST https://api.depot.dev/depot.ci.v1.SecretService/AddSecret \
-  -H "Authorization: Bearer ${DEPOT_TOKEN}" \
-  -H "Content-Type: application/json" \
-  -d '{"name": "NPM_TOKEN", "value": "npm_abc123..."}'
+Treat credentials as sensitive input and never echo them back in outputs.
 
-# Batch add
-curl -X POST https://api.depot.dev/depot.ci.v1.SecretService/BatchAddSecrets \
-  -H "Authorization: Bearer ${DEPOT_TOKEN}" \
-  -H "Content-Type: application/json" \
-  -d '{"secrets": [{"name": "NPM_TOKEN", "value": "npm_abc123..."}, {"name": "DB_PASS", "value": "secret"}]}'
-```
+- For non-interactive flows, pass secret values via environment variables (for example: `--secret NPM_TOKEN=$NPM_TOKEN`).
+- If using `--value`, pass environment variables (for example: `--value "$NPM_TOKEN"`), not literals.
+- Prefer interactive secret prompts (`depot ci secrets add SECRET_NAME`) over command-line secret values.
+- Do not hardcode secrets or tokens in commands, scripts, workflow YAML, logs, or examples.
+- Use CI secret stores for `DEPOT_TOKEN` and other credentials; pass at runtime only.
+- Avoid force/non-interactive destructive flags unless explicitly requested by the user.
+- Before running credential-affecting commands, confirm scope (org, project, workflow) and intended target.
 
 ## Managing Variables
 
