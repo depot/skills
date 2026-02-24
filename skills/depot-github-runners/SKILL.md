@@ -124,6 +124,51 @@ Launches a dedicated Dagger Engine VM with persistent NVMe cache. Dagger CLI pre
 
 Configure in org settings → GitHub Actions Runners → Egress Rules. Set default rule to Allow or Deny, then add specific allow/deny rules for IPs, CIDRs, or hostnames. Not supported on macOS or Windows. Incompatible with Tailscale.
 
+## Access Private Endpoints with Tailscale
+
+Use Tailscale when jobs need to reach private services (internal APIs, databases, private subnets) without static IP allowlists.
+
+How it works on Depot:
+- Depot GitHub Actions runners join your tailnet as ephemeral nodes at job start.
+- Access is controlled with your Tailscale ACLs (recommended tag: `tag:depot-runner`).
+- No workflow YAML changes are required just to connect runners to private endpoints.
+
+Setup:
+1. In Tailscale ACLs, create a runner tag (for example `tag:depot-runner`) under `tagOwners`.
+2. Create a Tailscale OAuth client with `Keys > Auth Keys` write scope and choose that tag.
+3. In Depot org settings, open Tailscale settings and connect using the OAuth client ID/secret.
+4. Add ACLs allowing `tag:depot-runner` to access target hosts/subnets.
+
+ACL examples:
+
+```json
+{
+  "acls": [
+    {
+      "action": "accept",
+      "src": ["tag:depot-runner"],
+      "dst": ["database-hostname"]
+    }
+  ]
+}
+```
+
+```json
+{
+  "acls": [
+    {
+      "action": "accept",
+      "src": ["tag:depot-runner"],
+      "dst": ["192.0.2.0/24:*"]
+    }
+  ]
+}
+```
+
+Reference docs:
+- https://depot.dev/docs/github-actions/how-to-guides/access-private-resources
+- https://depot.dev/docs/integrations/tailscale
+
 ## Dependabot
 
 Enable "Dependabot on self-hosted runners" in GitHub org settings. Jobs auto-run on `depot-ubuntu-latest`.
