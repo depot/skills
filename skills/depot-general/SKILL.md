@@ -10,7 +10,7 @@ description: >
   Actions runners, or Depot CI.
 ---
 
-# Depot General — CLI, Auth, and Project Setup
+# Depot General: CLI, Auth, and Project Setup
 
 Depot is a build acceleration platform. This skill covers CLI installation, authentication, project configuration, and organization management. For product-specific guidance, see the depot-container-builds, depot-github-runners, or depot-ci skills.
 
@@ -22,7 +22,7 @@ Security default: never execute downloaded scripts directly (`curl ... | sh`). D
 # macOS (Homebrew)
 brew install depot/tap/depot
 
-# Linux — see https://depot.dev/docs/cli/installation for all methods
+# Linux: see https://depot.dev/docs/cli/installation for all methods
 
 # Proto version manager
 proto plugin add depot "https://raw.githubusercontent.com/depot/cli/refs/heads/main/proto.yaml"
@@ -64,8 +64,8 @@ For every external download:
 ### Token Resolution Order
 
 1. `--token` flag (explicit on command)
-1. Locally stored token (from `depot login`)
 1. `DEPOT_TOKEN` environment variable
+1. Locally stored token (from `depot login`)
 
 ### Login
 
@@ -78,7 +78,7 @@ depot logout                          # Remove saved token
 
 ### OIDC Trust Relationships (Preferred for CI)
 
-Configure in Project Settings → Trust Relationships. No static secrets — short-lived credentials.
+Configure in Project Settings → Trust Relationships. No static secrets, just short-lived credentials.
 
 |CI Provider       |Configuration                                                                                   |
 |------------------|------------------------------------------------------------------------------------------------|
@@ -158,9 +158,9 @@ The only configuration file. Created by `depot init`:
 
 Three ways to specify a project (in priority order):
 
-1. `depot.json` in current or parent directory
 1. `--project <id>` flag
 1. `DEPOT_PROJECT_ID` environment variable
+1. `depot.json` in current or parent directory
 
 ## Organization Management
 
@@ -196,7 +196,6 @@ Before running high-impact commands:
 |`DEPOT_TOKEN`            |Auth token (user, project, or org)                     |
 |`DEPOT_PROJECT_ID`       |Project ID (alternative to `--project` or `depot.json`)|
 |`DEPOT_NO_SUMMARY_LINK=1`|Suppress build links and update notices (useful in CI) |
-|`DEPOT_INSTALL_DIR`      |Custom CLI install directory                           |
 |`DEPOT_DISABLE_OTEL=1`   |Disable OpenTelemetry tracing                          |
 
 ## Build and Cache Management
@@ -215,7 +214,7 @@ depot configure-docker              # Install Depot as Docker plugin + default b
 depot configure-docker --uninstall  # Remove
 ```
 
-## GitHub Actions — Depot Actions Reference
+## GitHub Actions: Depot Actions Reference
 
 |Action                      |Purpose                                                     |
 |----------------------------|------------------------------------------------------------|
@@ -223,7 +222,7 @@ depot configure-docker --uninstall  # Remove
 |`depot/build-push-action@v1`|Drop-in for `docker/build-push-action` (same inputs/outputs)|
 |`depot/bake-action@v1`      |Drop-in for `docker/bake-action`                            |
 |`depot/use-action@v1`       |Set Depot as default Docker Buildx builder                  |
-|`depot/pull-action`         |Pull from Depot Registry                                    |
+|`depot/pull-action@v1`      |Pull from Depot Registry                                    |
 
 ## API Access
 
@@ -244,10 +243,10 @@ const build = await depot.build.v1.BuildService.createBuild(
 
 ## Pricing Plans
 
-|Plan     |Cost   |Build Minutes         |Cache |Runners              |
-|---------|-------|----------------------|------|---------------------|
-|Developer|$20/mo |2,000/mo              |25 GB |Linux, Windows       |
-|Startup  |$200/mo|20,000/mo + $0.004/min|250 GB|Linux, Windows, macOS|
-|Business |Custom |Custom                |Custom|All + GPU            |
+|Plan     |Cost   |Docker Build Minutes|Depot CI Minutes|GHA Runner Minutes|Cache |
+|---------|-------|--------------------|----------------|------------------|------|
+|Developer|$20/mo |500/mo              |2,000/mo        |2,000/mo          |25 GB |
+|Startup  |$200/mo|5,000/mo            |20,000/mo       |20,000/mo         |250 GB|
+|Business |Custom |Custom              |Custom          |Custom            |Custom|
 
-Per-second billing, no minimums. Additional cache: $0.20/GB/month.
+Per-second billing, no minimums. Overage rates: Docker builds $0.04/minute, GitHub Actions runners $0.004/minute, Depot CI $0.00005/second/vCPU. Additional cache: $0.20/GB/month.
