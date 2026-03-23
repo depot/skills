@@ -326,7 +326,7 @@ JavaScript (Node 12/16/20/24), Composite, Docker
 
 ### Not Supported
 
-- **Reusable workflows from other repositories**: local reusable workflows work; cross-repo `uses` does not
+- **Cross-repo reusable workflows**: `uses` referencing workflows in other repositories is not supported. Local reusable workflows work.
 - **Fork-triggered PRs**: `pull_request` and `pull_request_target` from forks not supported yet
 - **Non-Ubuntu runner labels**: all non-Depot labels silently treated as `depot-ubuntu-latest` (no error, runs on Ubuntu)
 - **Deployment environments**: the `environment` field is not supported
