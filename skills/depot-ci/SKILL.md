@@ -163,7 +163,9 @@ Use `--ssh` or `--ssh-after-step` on `depot ci run` to start a debug session whe
 
 Build a custom image once and reuse it across jobs to skip repeated setup steps.
 
-**Build the image** using `depot/snapshot-action` (Depot CI only, not compatible with GitHub Actions):
+### Build the image
+
+Use `depot/snapshot-action` (Depot CI only, not compatible with GitHub Actions):
 ```yaml
 jobs:
   build-image:
@@ -175,7 +177,9 @@ jobs:
           image: <org-id>.registry.depot.dev/my-ci-image:latest
 ```
 
-**Use the image** in any Depot CI job with the `runs-on` object syntax:
+### Use the image
+
+Reference it in any Depot CI job with the `runs-on` object syntax:
 ```yaml
 jobs:
   test:
@@ -299,19 +303,26 @@ Use `--output json` on `depot ci run list` for machine-readable output.
 
 ### Supported
 
-**Workflow level:** `name`, `run-name`, `on`, `env`, `concurrency`, `defaults`, `jobs`, `on.workflow_call` (with inputs, outputs, secrets)
+#### Workflow level
+`name`, `run-name`, `on`, `env`, `concurrency`, `defaults`, `jobs`, `on.workflow_call` (with inputs, outputs, secrets)
 
-**Triggers:** `push` (branches, tags, paths), `pull_request` (branches, paths), `pull_request_target`, `schedule`, `workflow_call`, `workflow_dispatch` (with inputs), `workflow_run`, `merge_group`
+#### Triggers
+`push` (branches, tags, paths), `pull_request` (branches, paths), `pull_request_target`, `schedule`, `workflow_call`, `workflow_dispatch` (with inputs), `workflow_run`, `merge_group`
 
-**Job level:** `name`, `needs`, `if`, `outputs`, `env`, `defaults`, `timeout-minutes`, `concurrency`, `strategy` (matrix, fail-fast, max-parallel), `continue-on-error`, `container`, `services`, `uses` (reusable workflows), `with`, `secrets`, `secrets.inherit`, `steps`
+#### Job level
+`name`, `needs`, `if`, `outputs`, `env`, `defaults`, `timeout-minutes`, `concurrency`, `strategy` (matrix, fail-fast, max-parallel), `continue-on-error`, `container`, `services`, `uses` (reusable workflows), `with`, `secrets`, `secrets.inherit`, `steps`
 
-**Step level:** `id`, `name`, `if`, `uses`, `run`, `shell`, `with`, `env`, `working-directory`, `continue-on-error`, `timeout-minutes`
+#### Step level
+`id`, `name`, `if`, `uses`, `run`, `shell`, `with`, `env`, `working-directory`, `continue-on-error`, `timeout-minutes`
 
-**Permissions:** `actions`, `checks`, `contents`, `id-token`, `metadata`, `pull_requests`, `statuses`, `workflows`
+#### Permissions
+`actions`, `checks`, `contents`, `id-token`, `metadata`, `pull_requests`, `statuses`, `workflows`
 
-**Expressions:** `github`, `env`, `vars`, `secrets`, `needs`, `strategy`, `matrix`, `steps`, `job`, `runner`, `inputs` contexts. Functions: `always()`, `success()`, `failure()`, `cancelled()`, `contains()`, `startsWith()`, `endsWith()`, `format()`, `join()`, `toJSON()`, `fromJSON()`, `hashFiles()`
+#### Expressions
+`github`, `env`, `vars`, `secrets`, `needs`, `strategy`, `matrix`, `steps`, `job`, `runner`, `inputs` contexts. Functions: `always()`, `success()`, `failure()`, `cancelled()`, `contains()`, `startsWith()`, `endsWith()`, `format()`, `join()`, `toJSON()`, `fromJSON()`, `hashFiles()`
 
-**Action types:** JavaScript (Node 12/16/20/24), Composite, Docker
+#### Action types
+JavaScript (Node 12/16/20/24), Composite, Docker
 
 ### Not Supported
 
