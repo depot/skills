@@ -21,6 +21,26 @@ Three subsystems: **compute** (provisions and executes work), **orchestrator** (
 
 ## Getting Started
 
+### Org Context Preflight (Multi-Org Users)
+
+If a user belongs to multiple organizations, verify org context before running CI commands.
+
+```bash
+# Check current org ID
+depot org show
+
+# List orgs the user belongs to
+depot org list
+
+# Option A: switch default org for this shell/session
+depot org switch <org-id>
+
+# Option B: keep current org and target explicitly per command
+depot ci run --org <org-id> --workflow .depot/workflows/ci.yml
+```
+
+Use `--org <org-id>` when the workflow/repo lives in a different org than the current default.
+
 ### 1. Install the Depot Code Access GitHub App
 
 Depot dashboard → Settings → GitHub Code Access → Connect to GitHub
@@ -144,6 +164,9 @@ depot ci vars remove VAR_NAME --repo owner/repo
 ```bash
 # Run a workflow
 depot ci run --workflow .depot/workflows/ci.yml
+
+# Run a workflow in a specific org (recommended for multi-org users)
+depot ci run --org <org-id> --workflow .depot/workflows/ci.yml
 
 # Run specific jobs only
 depot ci run --workflow .depot/workflows/ci.yml --job build --job test
@@ -366,5 +389,6 @@ your-repo/
 |Removing `.github/workflows/` after migration|Keep them during transition to verify Depot CI parity      |
 |Using cross-repo reusable workflows          |Not supported yet, inline the workflow or copy it locally  |
 |Setting secrets without `--repo` when needed |Use `--repo owner/repo` for repo-specific secret overrides |
-|Forgetting `--org` flag with multiple orgs   |Migration will fail, always specify `--org <id>`           |
+|Running in the wrong org context             |Check `depot org show`, list with `depot org list`, then switch org or pass `--org <id>` |
+|Forgetting `--org` flag with multiple orgs   |Migration or run commands may miss the expected repo/workflow; specify `--org <id>` |
 |Workflows with `runs-on: windows-latest`     |Treated as `depot-ubuntu-latest`, may fail                 |

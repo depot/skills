@@ -170,6 +170,26 @@ depot org switch [org-id]         # Set current org
 depot org show                    # Show current org ID
 ```
 
+### Multi-Org Command Triage
+
+When users report "missing" projects, workflows, or runs, verify org context first:
+
+```bash
+# 1) Confirm current org
+depot org show
+
+# 2) See all orgs user can access
+depot org list
+
+# 3) Either switch default org...
+depot org switch <org-id>
+
+# ...or keep current default and target commands explicitly
+depot ci run --org <org-id> --workflow .depot/workflows/ci.yml
+```
+
+Prefer explicit `--org <org-id>` for scripted/automated commands to avoid accidental cross-org confusion.
+
 **Roles:** User (view projects, run builds) · Owner (create/delete projects, edit settings)
 
 Billing is per-organization. Configure usage caps, OIDC trust relationships, GitHub App connections, and cloud connections from org settings.

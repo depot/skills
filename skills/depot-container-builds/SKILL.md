@@ -14,6 +14,18 @@ description: >
 
 Depot runs Docker image builds on remote high-performance builders (16 CPU, 32 GB RAM, NVMe SSD cache). `depot build` is a drop-in replacement for `docker build` / `docker buildx build`. `depot bake` replaces `docker buildx bake`.
 
+## Org Context Check (Multi-Org Users)
+
+If resources look missing or access fails unexpectedly, confirm Depot org context before debugging build config:
+
+```bash
+depot org show            # Current org ID
+depot org list            # All orgs user belongs to
+depot org switch <org-id> # Optional: switch default org
+```
+
+For one-off commands, prefer explicit targeting with `--org <org-id>` (or `--project <project-id>` where applicable).
+
 ## Key Concepts
 
 - Builds run remotely on ephemeral EC2 instances — images stay in remote cache by default
