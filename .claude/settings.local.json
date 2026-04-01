@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find /Users/aanderson/projects/app -path *pricing* -o -path *plans*)",
+      "Bash(find /Users/aanderson/projects/app -name *pricing* -o -name *plans*)",
+      "Bash(/tmp/compare.txt:*)",
+      "Read(//tmp/**)",
+      "Bash(zip:*)"
+    ]
+  }
+}

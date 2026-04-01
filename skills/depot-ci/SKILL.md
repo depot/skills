@@ -19,11 +19,9 @@ Depot CI is a programmable CI system for engineers and agents. Workflows in Depo
 
 Three subsystems: **compute** (provisions and executes work), **orchestrator** (schedules multi-step workflows, handles dependencies), **GitHub Actions parser** (translates Actions YAML into orchestrator workflows). The system is fully programmable.
 
-## Getting Started
+## Org Context Check for Multi-Org Users
 
-### Org Context Preflight (Multi-Org Users)
-
-If a user belongs to multiple organizations, verify org context before running CI commands.
+If a user belongs to multiple organizations, before setup/migration or if CI commands can't find expected workflows, verify Depot org context first:
 
 ```bash
 # Check current org ID
@@ -40,6 +38,8 @@ depot ci run --org <org-id> --workflow .depot/workflows/ci.yml
 ```
 
 Use `--org <org-id>` when the workflow/repo lives in a different org than the current default.
+
+## Getting Started
 
 ### 1. Install the Depot Code Access GitHub App
 
@@ -165,7 +165,7 @@ depot ci vars remove VAR_NAME --repo owner/repo
 # Run a workflow
 depot ci run --workflow .depot/workflows/ci.yml
 
-# Run a workflow in a specific org (recommended for multi-org users)
+# Run a workflow in a specific org (for multi-org users)
 depot ci run --org <org-id> --workflow .depot/workflows/ci.yml
 
 # Run specific jobs only

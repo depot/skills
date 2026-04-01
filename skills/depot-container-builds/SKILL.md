@@ -14,17 +14,15 @@ description: >
 
 Depot runs Docker image builds on remote high-performance builders (16 CPU, 32 GB RAM, NVMe SSD cache). `depot build` is a drop-in replacement for `docker build` / `docker buildx build`. `depot bake` replaces `docker buildx bake`.
 
-## Org Context Check (Multi-Org Users)
+## Project Selection for Multi-Org Users
 
-If resources look missing or access fails unexpectedly, confirm Depot org context before debugging build config:
+Container build commands target a specific project, not an organization. If expected projects aren't visible or a build unexpectedly prompts to select a project, the current default org may be wrong:
 
 ```bash
-depot org show            # Current org ID
-depot org list            # All orgs user belongs to
-depot org switch <org-id> # Optional: switch default org
+depot org show              # Current org ID
+depot org list              # Orgs the user belongs to
+depot org switch <org-id>   # Optional: set default org
 ```
-
-For one-off commands, prefer explicit targeting with `--org <org-id>` (or `--project <project-id>` where applicable).
 
 ## Key Concepts
 
