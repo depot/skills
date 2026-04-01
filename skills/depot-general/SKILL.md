@@ -165,14 +165,33 @@ Three ways to specify a project (in priority order):
 ## Organization Management
 
 ```bash
-depot org list                    # List orgs (supports --output json/csv)
-depot org switch [org-id]         # Set current org
-depot org show                    # Show current org ID
+depot org show              # Current org ID
+depot org list              # Orgs the user belongs to
+depot org switch <org-id>   # Set default org
 ```
-
 **Roles:** User (view projects, run builds) · Owner (create/delete projects, edit settings)
 
 Billing is per-organization. Configure usage caps, OIDC trust relationships, GitHub App connections, and cloud connections from org settings.
+
+### Command Triage for Multi-Org Users
+
+If a user belongs to multiple organizations and reports "missing" projects, workflows, or runs, verify Depot org context first:
+
+```bash
+# 1) Confirm current org
+depot org show
+
+# 2) See all orgs user can access
+depot org list
+
+# 3) Either switch default org...
+depot org switch <org-id>
+
+# ...or keep current default and target commands explicitly, for example:
+depot ci run --org <org-id> --workflow .depot/workflows/ci.yml
+```
+
+Prefer explicit `--org <org-id>` for scripted/automated commands to avoid accidental cross-org confusion.
 
 ## Command Safety Guardrails
 

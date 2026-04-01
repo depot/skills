@@ -22,6 +22,18 @@ Depot provides managed, ephemeral, single-tenant GitHub Actions runners. Drop-in
 2. For public repos: GitHub org settings → Actions → Runner groups → Default → "Allow public repositories"
 3. Update `runs-on` in your workflow files
 
+## Org Context Check for Multi-Org Users
+
+If a user belongs to multiple organizations and expected repos/settings/runners are not visible, verify Depot org context first:
+
+```bash
+depot org show              # Current org ID
+depot org list              # Orgs the user belongs to
+depot org switch <org-id>   # Optional: set default org
+```
+
+For commands that support it, pass `--org <org-id>` to target the org where the workflow/repo lives.
+
 ## Runner Labels
 
 Use a single label. Format: `depot-{os}-{version}[-{arch}][-{size}]`
