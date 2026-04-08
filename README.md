@@ -41,6 +41,38 @@ After manual install, open Cursor Settings -> Rules and verify these files are e
 | **Depot CI** | [`skills/depot-ci/`](skills/depot-ci/SKILL.md) | Depot CI beta, `depot ci migrate`, secrets/vars, running workflows, GHA compatibility |
 | **General** | [`skills/depot-general/`](skills/depot-general/SKILL.md) | CLI installation, authentication (tokens, OIDC), project setup, org management, API, pricing |
 
+## Repo Structure
+
+```text
+skillz/
+├── .cursor-plugin/
+│   └── plugin.json
+├── README.md
+└── skills/
+    ├── depot-container-builds/
+    │   ├── SKILL.md
+    │   ├── agents/
+    │   └── assets/
+    ├── depot-github-runners/
+    │   ├── SKILL.md
+    │   ├── agents/
+    │   └── assets/
+    ├── depot-ci/
+    │   ├── SKILL.md
+    │   ├── agents/
+    │   └── assets/
+    └── depot-general/
+        ├── SKILL.md
+        ├── agents/
+        └── assets/
+```
+
+Each skill is a sub-directory under `skills/` with:
+
+- `SKILL.md` (required): instructions, triggers, and workflows
+- `agents/` (optional): agent interface metadata
+- `assets/` (optional): icons and supporting media
+
 ## Documentation
 
 For full Depot documentation, visit [https://depot.dev/docs](https://depot.dev/docs).
