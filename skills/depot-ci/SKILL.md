@@ -82,12 +82,12 @@ depot ci migrate secrets-and-vars
 
 #### Migrate flags
 
-|Flag                |Description                                |
-|--------------------|-------------------------------------------|
-|`-y, --yes`         |Non-interactive, migrate all workflows     |
-|`--overwrite`       |Overwrite existing `.depot/` directory     |
-|`--org <id>`        |Organization ID (required if multiple orgs)|
-|`--token <token>`   |Depot API token                            |
+| Flag              | Description                                 |
+| ----------------- | ------------------------------------------- |
+| `-y, --yes`       | Non-interactive, migrate all workflows      |
+| `--overwrite`     | Overwrite existing `.depot/` directory      |
+| `--org <id>`      | Organization ID (required if multiple orgs) |
+| `--token <token>` | Depot API token                             |
 
 ### 3. Import secrets and variables
 
@@ -98,6 +98,17 @@ depot ci migrate secrets-and-vars
 This creates and runs a one-shot GitHub Actions workflow on a temporary branch that reads your existing secrets and variables and imports them into Depot CI. The branch is safe to delete afterwards.
 
 You can also add secrets and variables manually with `depot ci secrets add` and `depot ci vars add` (see below).
+
+#### Migrate Secrets-and-Vars flags
+
+| Flag               | Description                                                                        |
+| ------------------ | ---------------------------------------------------------------------------------- |
+| `-y, --yes`        | Skip preview and confirmation prompts                                              |
+| `--branch`         | Override the branch name used for the migration workflow                           |
+| `--secrets <name>` | Secret name to include; can be repeated to select multiple. Omit to include all.   |
+| `--vars <name>`    | Variable name to include; can be repeated to select multiple. Omit to include all. |
+| `--org <id>`       | Organization ID (required if multiple orgs)                                        |
+| `--token <token>`  | Depot API token                                                                    |
 
 ### 4. Manual setup (without migrate command)
 
@@ -189,6 +200,7 @@ Build a custom image once and reuse it across jobs to skip repeated setup steps.
 ### Build the image
 
 Use `depot/snapshot-action` (Depot CI only, not compatible with GitHub Actions):
+
 ```yaml
 jobs:
   build-image:
@@ -203,6 +215,7 @@ jobs:
 ### Use the image
 
 Reference it in any Depot CI job with the `runs-on` object syntax:
+
 ```yaml
 jobs:
   test:
@@ -216,6 +229,56 @@ jobs:
 Available sizes: `2x8`, `4x16`, `8x32`, `16x64`, `32x128` (CPUs x RAM in GB).
 
 **Constraints:** Images get pushed to and must be pulled from the Depot registry (`registry.depot.dev`), external registries are not supported.
+
+## Parallel Steps
+
+Depot CI supports running steps concurrently within a single job using `parallel:` blocks. This reduces job duration to the slowest step rather than the sum of all steps. This is a Depot CI-specific feature, it is not compatible with GitHub Actions runners.
+
+Use `parallel:` inside `steps:` with individual steps or `sequential:` groups. Each branch starts from the same job state; environment variable and `$GITHUB_PATH` changes from all branches are merged back when the block completes.
+
+```yaml
+# Run lint, typecheck, and tests concurrently
+steps:
+  - uses: actions/checkout@v4
+  - name: Install dependencies
+    run: pnpm install
+  - parallel:
+      - name: Lint
+        run: pnpm lint
+      - name: Typecheck
+        run: pnpm type-check
+      - name: Test
+        run: pnpm test
+```
+
+Use `sequential:` inside `parallel:` to group steps that must run in order within one branch:
+
+```yaml
+- parallel:
+    - sequential:
+        - name: Build
+          run: npm run build
+        - name: Test
+          run: npm test
+    - name: Lint
+      run: npm run lint
+```
+
+Control failure behavior with `fail-fast:`. Defaults to `true` which cancels remaining steps in a parallel block. `false` will instead let all steps in the parallel block run to completion.:
+
+```yaml
+- fail-fast: false
+  parallel:
+    - name: Lint
+      run: pnpm lint
+    - name: Typecheck
+      run: pnpm type-check
+```
+
+**Limitations:**
+
+- `parallel:` cannot be nested inside another `parallel:` (use `sequential:` inside `parallel:` instead)
+- Step `id` values must be unique across the entire job (including even in different parallel blocks)
 
 ## SSH into Running Jobs
 
@@ -239,13 +302,13 @@ The command waits up to 5 minutes for the job sandbox to be provisioned if it ha
 
 ### SSH flags
 
-|Flag              |Description                                          |
-|------------------|-----------------------------------------------------|
-|`--job <key>`     |Job key to connect to (required for multi-job runs)  |
-|`--info`          |Print SSH details instead of connecting interactively|
-|`-o, --output`    |Output format for `--info` (`json`)                  |
-|`--org <id>`      |Organization ID                                      |
-|`--token <token>` |Depot API token                                      |
+| Flag              | Description                                           |
+| ----------------- | ----------------------------------------------------- |
+| `--job <key>`     | Job key to connect to (required for multi-job runs)   |
+| `--info`          | Print SSH details instead of connecting interactively |
+| `-o, --output`    | Output format for `--info` (`json`)                   |
+| `--org <id>`      | Organization ID                                       |
+| `--token <token>` | Depot API token                                       |
 
 ## Checking Status and Logs
 
@@ -268,12 +331,12 @@ When given a run or job ID, `depot ci logs` resolves to the latest attempt autom
 
 ### Logs flags
 
-|Flag              |Description                                                    |
-|------------------|---------------------------------------------------------------|
-|`--job <key>`     |Job key to select (required when run has multiple jobs)        |
-|`--workflow <path>`|Workflow path to filter jobs (for example, `ci.yml`)          |
-|`--org <id>`      |Organization ID                                                |
-|`--token <token>` |Depot API token                                                |
+| Flag                | Description                                             |
+| ------------------- | ------------------------------------------------------- |
+| `--job <key>`       | Job key to select (required when run has multiple jobs) |
+| `--workflow <path>` | Workflow path to filter jobs (for example, `ci.yml`)    |
+| `--org <id>`        | Organization ID                                         |
+| `--token <token>`   | Depot API token                                         |
 
 ## Listing Runs and Triage Flow
 
@@ -296,13 +359,13 @@ depot ci run list --output json
 
 ### `run list` flags
 
-|Flag             |Description                                                                 |
-|-----------------|----------------------------------------------------------------------------|
-|`-n <int>`       |Number of runs to return (default `50`)                                     |
-|`--status <name>`|Filter by status; repeatable: `queued`, `running`, `finished`, `failed`, `cancelled`|
-|`-o, --output`   |Output format (`json`)                                                      |
-|`--org <id>`     |Organization ID                                                             |
-|`--token <token>`|Depot API token                                                             |
+| Flag              | Description                                                                          |
+| ----------------- | ------------------------------------------------------------------------------------ |
+| `-n <int>`        | Number of runs to return (default `50`)                                              |
+| `--status <name>` | Filter by status; repeatable: `queued`, `running`, `finished`, `failed`, `cancelled` |
+| `-o, --output`    | Output format (`json`)                                                               |
+| `--org <id>`      | Organization ID                                                                      |
+| `--token <token>` | Depot API token                                                                      |
 
 ### Debugging failed runs
 
@@ -327,24 +390,31 @@ Use `--output json` on `depot ci run list` for machine-readable output.
 ### Supported
 
 #### Workflow level
+
 `name`, `run-name`, `on`, `env`, `concurrency`, `defaults`, `jobs`, `on.workflow_call` (with inputs, outputs, secrets)
 
 #### Triggers
+
 `push` (branches, tags, paths), `pull_request` (branches, paths), `pull_request_target`, `schedule`, `workflow_call`, `workflow_dispatch` (with inputs), `workflow_run`, `merge_group`
 
 #### Job level
+
 `name`, `needs`, `if`, `outputs`, `env`, `defaults`, `timeout-minutes`, `concurrency`, `strategy` (matrix, fail-fast, max-parallel), `continue-on-error`, `container`, `services`, `uses` (reusable workflows), `with`, `secrets`, `secrets.inherit`, `steps`
 
 #### Step level
+
 `id`, `name`, `if`, `uses`, `run`, `shell`, `with`, `env`, `working-directory`, `continue-on-error`, `timeout-minutes`
 
 #### Permissions
+
 `actions`, `checks`, `contents`, `id-token`, `metadata`, `pull_requests`, `statuses`, `workflows`
 
 #### Expressions
+
 `github`, `env`, `vars`, `secrets`, `needs`, `strategy`, `matrix`, `steps`, `job`, `runner`, `inputs` contexts. Functions: `always()`, `success()`, `failure()`, `cancelled()`, `contains()`, `startsWith()`, `endsWith()`, `format()`, `join()`, `toJSON()`, `fromJSON()`, `hashFiles()`
 
 #### Action types
+
 JavaScript (Node 12/16/20/24), Composite, Docker
 
 ### Not Supported
@@ -359,14 +429,14 @@ JavaScript (Node 12/16/20/24), Composite, Docker
 
 Depot CI supports these runner labels:
 
-|Label                    |CPUs |RAM    |
-|-------------------------|-----|-------|
-|`depot-ubuntu-latest`    |2    |8 GB   |
-|`depot-ubuntu-24.04`     |2    |8 GB   |
-|`depot-ubuntu-24.04-4`   |4    |16 GB  |
-|`depot-ubuntu-24.04-8`   |8    |32 GB  |
-|`depot-ubuntu-24.04-16`  |16   |64 GB  |
-|`depot-ubuntu-24.04-32`  |32   |128 GB |
+| Label                   | CPUs | RAM    |
+| ----------------------- | ---- | ------ |
+| `depot-ubuntu-latest`   | 2    | 8 GB   |
+| `depot-ubuntu-24.04`    | 2    | 8 GB   |
+| `depot-ubuntu-24.04-4`  | 4    | 16 GB  |
+| `depot-ubuntu-24.04-8`  | 8    | 32 GB  |
+| `depot-ubuntu-24.04-16` | 16   | 64 GB  |
+| `depot-ubuntu-24.04-32` | 32   | 128 GB |
 
 Any label Depot CI can't parse is silently treated as `depot-ubuntu-latest`.
 
@@ -384,11 +454,11 @@ your-repo/
 
 ## Common Mistakes
 
-|Mistake                                      |Fix                                                       |
-|---------------------------------------------|----------------------------------------------------------|
-|Removing `.github/workflows/` after migration|Keep them during transition to verify Depot CI parity      |
-|Using cross-repo reusable workflows          |Not supported yet, inline the workflow or copy it locally  |
-|Setting secrets without `--repo` when needed |Use `--repo owner/repo` for repo-specific secret overrides |
-|Running in the wrong org context             |Check `depot org show`, list with `depot org list`, then switch org or pass `--org <id>` |
-|Forgetting `--org` flag with multiple orgs   |Migration or run commands may miss the expected repo/workflow; specify `--org <id>` |
-|Workflows with `runs-on: windows-latest`     |Treated as `depot-ubuntu-latest`, may fail                 |
+| Mistake                                       | Fix                                                                                      |
+| --------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Removing `.github/workflows/` after migration | Keep them during transition to verify Depot CI parity                                    |
+| Using cross-repo reusable workflows           | Not supported yet, inline the workflow or copy it locally                                |
+| Setting secrets without `--repo` when needed  | Use `--repo owner/repo` for repo-specific secret overrides                               |
+| Running in the wrong org context              | Check `depot org show`, list with `depot org list`, then switch org or pass `--org <id>` |
+| Forgetting `--org` flag with multiple orgs    | Migration or run commands may miss the expected repo/workflow; specify `--org <id>`      |
+| Workflows with `runs-on: windows-latest`      | Treated as `depot-ubuntu-latest`, may fail                                               |
