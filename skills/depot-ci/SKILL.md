@@ -232,9 +232,9 @@ Available sizes: `2x8`, `4x16`, `8x32`, `16x64`, `32x128` (CPUs x RAM in GB).
 
 ## Parallel Steps
 
-Depot CI supports running steps concurrently within a single job using `parallel:` blocks. This reduces job duration to the slowest step rather than the sum of all steps. This is a Depot CI-specific feature, it is not compatible with GitHub Actions runners.
+Depot CI supports running steps concurrently within a single job using `parallel:` blocks. This reduces job duration to the slowest branch rather than the sum of all steps. This is a Depot CI-specific feature, it is not compatible with GitHub Actions runners.
 
-Use `parallel:` inside `steps:` with individual steps or `sequential:` groups. Each branch starts from the same job state; environment variable and `$GITHUB_PATH` changes from all branches are merged back when the block completes.
+Use `parallel:` inside `steps:` with individual steps or `sequential:` groups. Each branch starts from the same job state; step outputs, environment variable and `$GITHUB_PATH` changes from all branches are merged back when the block completes.
 
 ```yaml
 # Run lint, typecheck, and tests concurrently
