@@ -264,7 +264,7 @@ Use `sequential:` inside `parallel:` to group steps that must run in order withi
       run: npm run lint
 ```
 
-Control failure behavior with `fail-fast:`. Defaults to `true` which cancels remaining steps in a parallel block. `false` will instead let all steps in the parallel block run to completion.:
+Control failure behavior with `fail-fast:`. Defaults to `true` which cancels remaining steps in a parallel block. `false` will instead let all steps in the parallel block run to completion:
 
 ```yaml
 - fail-fast: false
