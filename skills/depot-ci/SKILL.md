@@ -116,7 +116,7 @@ Create `.depot/workflows/` and `.depot/actions/` directories manually. Copy work
 
 ## Managing Secrets
 
-Secrets can be org-wide or scoped to a specific repository. Repository-scoped secrets override org-wide secrets with the same name.
+Secrets can be org-wide or scoped to a specific repository. They can also have **variants**: multiple values for the same name that resolve based on workflow context (repository, branch, workflow file, GitHub environment). The CLI only handles repo scoping; variants with branch, workflow, or environment rules must be created in the dashboard. See the **Secret and Variable Variants** section below for resolution rules.
 
 ```bash
 # Add (prompts for value securely if --value omitted)
@@ -170,6 +170,35 @@ depot ci vars remove VAR_NAME --force
 depot ci vars remove VAR_NAME --repo owner/repo
 ```
 
+## Secret and Variable Variants
+
+A variant is another secret or variable with the same name but different repository scope or access rules. Variants let one name resolve to different values depending on the workflow context, for example a different `DATABASE_URL` for `production` vs `staging`, or for one repo vs all repos.
+
+Variants are created and managed in the dashboard ([Depot CI workflows](https://depot.dev/orgs/_/workflows) → Settings → Secrets/Variables → Add variant). The CLI only supports repository scoping, so anything beyond that requires the dashboard.
+
+### Access rule kinds
+
+Limit when a variant is selected by combining one or more rules:
+
+- **Repository**: select when the workflow runs in a specific repository.
+- **Branch**: select when the branch name matches; supports glob patterns like `release/*`.
+- **Workflow**: select when the workflow file matches; supports glob patterns like `deploy-*.yaml`.
+- **Environment**: select when the job's GitHub `environment` field matches exactly. Provides compatibility with GitHub Environment Secrets. Jobs without an `environment` field never match environment rules.
+
+Within a single rule kind, alternatives broaden availability (`branch=main` OR `branch=release/*`). Across kinds, the variant must satisfy all rule kinds (`branch=main` AND `environment=production`).
+
+### Resolution priority
+
+When multiple variants match a job, Depot picks the most specific:
+
+1. Environment rules win over all others. An org-wide variant with an environment rule beats a repo-scoped variant with no environment rule.
+2. Repository scope wins over branch and workflow rules, but not over environment rules.
+3. Branch and workflow rules: literal matches win over globs, narrower globs win over broader globs (`release/v2` beats `release/*`).
+
+For a repo to override an org-wide environment variant, create a variant with both the repository scope **and** the environment rule.
+
+To preview which variant resolves for a given workflow context, open the dashboard secret or variable create/edit page, expand the **Secret variants** or **Variable variants** list, and enter a sample context (repo, branch, workflow file, environment). The matching variant is highlighted.
+
 ## Running Workflows
 
 ```bash
@@ -187,11 +216,46 @@ depot ci run --workflow .depot/workflows/ci.yml --job build --ssh
 
 # Debug with tmate session after step N (requires single --job)
 depot ci run --workflow .depot/workflows/ci.yml --job build --ssh-after-step 3
+
+# Override the auto-detected repository (useful when multiple remotes or no origin)
+depot ci run --workflow .depot/workflows/ci.yml --repo owner/repo
 ```
+
+The CLI auto-detects the GitHub repository from git remotes (preferring `origin`); pass `--repo owner/repo` to override that detection.
 
 The CLI auto-detects uncommitted changes vs. the default branch, uploads a patch to Depot Cache, and injects a step to apply it after checkout, so your local working state runs without needing a push.
 
 Use `--ssh` or `--ssh-after-step` on `depot ci run` to start a debug session when launching a new run. Use `depot ci ssh` (below) to connect to an already-running job.
+
+## Dispatching Workflows
+
+`depot ci dispatch` triggers a workflow via `workflow_dispatch` from the terminal. Inputs are validated against the workflow's declared input schema (required inputs must be supplied, typed inputs are coerced).
+
+```bash
+# Dispatch on a branch
+depot ci dispatch --repo depot/cli --workflow deploy.yml --ref main
+
+# Pass inputs (repeatable)
+depot ci dispatch --repo depot/cli --workflow deploy.yml --ref main \
+  --input environment=staging --input dry_run=true
+
+# JSON output (returns the new run ID)
+depot ci dispatch --repo depot/cli --workflow deploy.yml --ref main --output json
+```
+
+`--workflow` takes the workflow file's **basename** (for example `deploy.yml`), not the full path `.depot/workflows/deploy.yml`. This matches GitHub's `workflow_dispatch` API convention.
+
+### `dispatch` flags
+
+| Flag                    | Description                                                                |
+| ----------------------- | -------------------------------------------------------------------------- |
+| `--repo <owner/repo>`   | Target GitHub repository (required)                                        |
+| `--workflow <filename>` | Workflow file basename, for example `deploy.yml` (required)                |
+| `--ref <branch-or-tag>` | Branch or tag name to run the workflow on (required)                       |
+| `--input <key>=<value>` | Workflow input as `key=value`; repeatable                                  |
+| `--output json`         | Output the RPC response as JSON                                            |
+| `--org <id>`            | Organization ID                                                            |
+| `--token <token>`       | Depot API token                                                            |
 
 ## Custom Images
 
@@ -350,6 +414,15 @@ depot ci run list
 depot ci run list --status failed
 depot ci run list --status finished --status failed
 
+# Filter by repository and commit SHA prefix
+depot ci run list --repo depot/api --sha abc123
+
+# Filter by trigger event
+depot ci run list --trigger workflow_dispatch
+
+# Filter failed runs for a pull request (--pr requires --repo)
+depot ci run list --repo depot/api --status failed --pr 42
+
 # Limit number of results
 depot ci run list -n 5
 
@@ -359,13 +432,30 @@ depot ci run list --output json
 
 ### `run list` flags
 
-| Flag              | Description                                                                          |
-| ----------------- | ------------------------------------------------------------------------------------ |
-| `-n <int>`        | Number of runs to return (default `50`)                                              |
-| `--status <name>` | Filter by status; repeatable: `queued`, `running`, `finished`, `failed`, `cancelled` |
-| `-o, --output`    | Output format (`json`)                                                               |
-| `--org <id>`      | Organization ID                                                                      |
-| `--token <token>` | Depot API token                                                                      |
+| Flag                  | Description                                                                          |
+| --------------------- | ------------------------------------------------------------------------------------ |
+| `-n <int>`            | Number of runs to return (default `50`)                                              |
+| `--status <name>`     | Filter by status; repeatable: `queued`, `running`, `finished`, `failed`, `cancelled` |
+| `--repo <owner/repo>` | Filter by repository                                                                 |
+| `--sha <prefix>`      | Filter by commit SHA prefix                                                          |
+| `--trigger <event>`   | Filter by trigger event, for example `push` or `workflow_dispatch`                   |
+| `--pr <number>`       | Filter by pull request number (requires `--repo`)                                    |
+| `-o, --output`        | Output format (`json`)                                                               |
+| `--org <id>`          | Organization ID                                                                      |
+| `--token <token>`     | Depot API token                                                                      |
+
+### Inspecting a single run
+
+```bash
+# Print a flat record for one run (org, repo, status, trigger, ref, sha, head sha, timestamps)
+depot ci run show <run-id>
+depot ci run get <run-id>            # alias
+
+# JSON output
+depot ci run show <run-id> --output json
+```
+
+Use `depot ci status <run-id>` instead when you need the full workflow/job/attempt hierarchy.
 
 ### Debugging failed runs
 
@@ -385,13 +475,137 @@ depot ci status <run-id>
 
 Use `--output json` on `depot ci run list` for machine-readable output.
 
+## Listing and Inspecting Workflows
+
+`depot ci run list` returns runs (one entry per triggering event); `depot ci workflow list` returns workflows (one entry per workflow execution within a run, with per-job counts). Use `depot ci workflow list` when you want to filter by workflow `--name` (for example `deploy`), or to see job-count breakdowns rather than run-level status.
+
+```bash
+# List recent workflows (default 50, max 200)
+depot ci workflow list
+depot ci workflow ls                  # alias
+
+# Filter by workflow name
+depot ci workflow list --name deploy
+
+# Filter by repo, status, head SHA, and pull request
+depot ci workflow list --repo depot/api --status failed --sha abc123 --pr 42
+
+# JSON output
+depot ci workflow list --output json
+```
+
+### `workflow list` flags
+
+| Flag                  | Description                                                                                       |
+| --------------------- | ------------------------------------------------------------------------------------------------- |
+| `-n <int>`            | Number of recent workflows to return (default `50`, max `200`)                                    |
+| `--name <name>`       | Filter by workflow name                                                                           |
+| `--repo <owner/repo>` | Filter by repository                                                                              |
+| `--status <name>`     | Filter by status; repeatable: `queued`, `running`, `finished`, `failed`, `cancelled`              |
+| `--trigger <event>`   | Filter by trigger event, for example `push` or `workflow_dispatch`                                |
+| `--sha <prefix>`      | Filter by head SHA prefix                                                                         |
+| `--pr <number>`       | Filter by pull request number                                                                     |
+| `-o, --output`        | Output format (`json`)                                                                            |
+| `--org <id>`          | Organization ID                                                                                   |
+| `--token <token>`     | Depot API token                                                                                   |
+
+### Inspecting a single workflow
+
+```bash
+# Show parent run context, executions, jobs, and attempts
+depot ci workflow show <workflow-id>
+depot ci workflow get <workflow-id>   # alias
+
+# JSON output
+depot ci workflow show <workflow-id> --output json
+```
+
+## Cancelling, Rerunning, and Retrying
+
+`depot ci cancel` can target a whole run, a workflow within a run, or a single job. `depot ci rerun` and `depot ci retry` only operate on workflows or jobs. All three give the CLI parity with the dashboard for in-flight mutations.
+
+### `depot ci cancel`
+
+Cancels a whole run (no scope flag), an entire workflow (and all its jobs) with `--workflow <workflow-id>`, or a single job with `--job <job-id>`. `--workflow` and `--job` are mutually exclusive; pass neither to cancel the entire run. With `--job`, the CLI resolves the containing workflow from run status automatically. Runs, workflows, or jobs already in a terminal state (finished, failed, cancelled) cannot be cancelled and return an error.
+
+```bash
+# Cancel an entire run (and every workflow and job within it)
+depot ci cancel <run-id>
+
+# Cancel one workflow within the run (and all its jobs)
+depot ci cancel <run-id> --workflow <workflow-id>
+
+# Cancel a single job (workflow is resolved automatically)
+depot ci cancel <run-id> --job <job-id>
+
+# JSON output
+depot ci cancel <run-id> --output json
+```
+
+| Flag              | Description                                                                  |
+| ----------------- | ---------------------------------------------------------------------------- |
+| `--workflow <id>` | Workflow ID to cancel (mutually exclusive with `--job`; omit both for run)   |
+| `--job <id>`      | Job ID to cancel (mutually exclusive with `--workflow`; omit both for run)   |
+| `--output json`   | Output the RPC response as JSON                                              |
+| `--org <id>`      | Organization ID                                                              |
+| `--token <token>` | Depot API token                                                              |
+
+### `depot ci rerun`
+
+Re-runs every job in a workflow that has reached a terminal state. Creates a new attempt for each job. For runs that contain only one workflow, the CLI resolves it automatically; for multi-workflow runs, pass `--workflow <id>`. Rerunning a workflow that is still running returns a precondition error: cancel it first.
+
+```bash
+# Rerun the (single) workflow in a run
+depot ci rerun <run-id>
+
+# Rerun a specific workflow in a multi-workflow run
+depot ci rerun <run-id> --workflow <workflow-id>
+
+# JSON output
+depot ci rerun <run-id> --output json
+```
+
+| Flag              | Description                                                                |
+| ----------------- | -------------------------------------------------------------------------- |
+| `--workflow <id>` | Workflow ID to rerun (required when the run contains multiple workflows)   |
+| `--output json`   | Output the RPC response as JSON                                            |
+| `--org <id>`      | Organization ID                                                            |
+| `--token <token>` | Depot API token                                                            |
+
+### `depot ci retry`
+
+Retries a single failed or cancelled job with `--job <job-id>`, or every failed/cancelled job in a workflow with `--failed`. Exactly one of `--job` or `--failed` must be set; they are mutually exclusive. With `--job`, the containing workflow is resolved automatically from run status. With `--failed` on a multi-workflow run, `--workflow <id>` is required. Each retry creates a new attempt; previous attempts remain visible in `depot ci status`.
+
+```bash
+# Retry a single job
+depot ci retry <run-id> --job <job-id>
+
+# Retry every failed/cancelled job in the (single) workflow
+depot ci retry <run-id> --failed
+
+# Retry every failed/cancelled job in a specific workflow
+depot ci retry <run-id> --failed --workflow <workflow-id>
+
+# JSON output
+depot ci retry <run-id> --job <job-id> --output json
+```
+
+| Flag              | Description                                                                        |
+| ----------------- | ---------------------------------------------------------------------------------- |
+| `--job <id>`      | Job ID to retry (mutually exclusive with `--failed`)                               |
+| `--failed`        | Retry every failed/cancelled job in the workflow (mutually exclusive with `--job`) |
+| `--workflow <id>` | Workflow ID; required with `--failed` when the run has multiple workflows          |
+| `--output json`   | Output the RPC response as JSON                                                    |
+| `--org <id>`      | Organization ID                                                                    |
+| `--token <token>` | Depot API token                                                                    |
+
 ## Compatibility with GitHub Actions
 
 ### Supported
 
 #### Workflow level
 
-`name`, `run-name`, `on`, `env`, `concurrency`, `defaults`, `jobs`, `on.workflow_call` (with inputs, outputs, secrets)
+`name`, `run-name`, `on`, `permissions`, `env`, `concurrency`, `defaults`, `jobs`, `on.workflow_call` (with inputs, outputs, secrets)
 
 #### Triggers
 
@@ -399,7 +613,7 @@ Use `--output json` on `depot ci run list` for machine-readable output.
 
 #### Job level
 
-`name`, `needs`, `if`, `outputs`, `env`, `defaults`, `timeout-minutes`, `concurrency`, `strategy` (matrix, fail-fast, max-parallel), `continue-on-error`, `container`, `services`, `uses` (reusable workflows), `with`, `secrets`, `secrets.inherit`, `steps`
+`name`, `needs`, `if`, `permissions`, `outputs`, `env`, `defaults`, `timeout-minutes`, `concurrency`, `strategy` (matrix, fail-fast, max-parallel), `continue-on-error`, `container`, `services`, `uses` (reusable workflows), `with`, `secrets`, `secrets.inherit`, `steps`
 
 #### Step level
 
@@ -411,7 +625,7 @@ Use `--output json` on `depot ci run list` for machine-readable output.
 
 #### Expressions
 
-`github`, `env`, `vars`, `secrets`, `needs`, `strategy`, `matrix`, `steps`, `job`, `runner`, `inputs` contexts. Functions: `always()`, `success()`, `failure()`, `cancelled()`, `contains()`, `startsWith()`, `endsWith()`, `format()`, `join()`, `toJSON()`, `fromJSON()`, `hashFiles()`
+`github`, `env`, `vars`, `secrets`, `needs`, `strategy`, `matrix`, `steps`, `job`, `runner`, `inputs` contexts. Functions: `always()`, `success()`, `failure()`, `cancelled()`, `case()`, `contains()`, `startsWith()`, `endsWith()`, `format()`, `join()`, `toJSON()`, `fromJSON()`, `hashFiles()`
 
 #### Action types
 
@@ -423,20 +637,23 @@ JavaScript (Node 12/16/20/24), Composite, Docker
 - **Fork-triggered PRs**: `pull_request` and `pull_request_target` from forks not supported yet
 - **Non-Ubuntu runner labels**: all non-Depot labels silently treated as `depot-ubuntu-latest` (no error, runs on Ubuntu)
 - **Deployment environments**: the `environment` field is not supported
-- **GitHub-specific event triggers**: `release`, `issues`, `issue_comment`, `deployment`, `create`, `delete`, and others
+- **GitHub-specific event triggers**: `branch_protection_rule`, `check_run`, `check_suite`, `create`, `delete`, `deployment`, `deployment_status`, `discussion`, `discussion_comment`, `fork`, `gollum`, `image_version`, `issue_comment`, `issues`, `label`, `milestone`, `page_build`, `public`, `pull_request_comment`, `pull_request_review`, `pull_request_review_comment`, `registry_package`, `release`, `repository_dispatch`, `status`, `watch`
 
 ### Runner labels
 
-Depot CI supports these runner labels:
+Depot CI sandboxes are x86_64 only. There is no Arm, macOS, or Windows support: those Depot GitHub Actions runner labels (`depot-ubuntu-*-arm`, `depot-macos-*`, `depot-windows-*`) are not compatible with Depot CI.
 
-| Label                   | CPUs | RAM    |
-| ----------------------- | ---- | ------ |
-| `depot-ubuntu-latest`   | 2    | 8 GB   |
-| `depot-ubuntu-24.04`    | 2    | 8 GB   |
-| `depot-ubuntu-24.04-4`  | 4    | 16 GB  |
-| `depot-ubuntu-24.04-8`  | 8    | 32 GB  |
-| `depot-ubuntu-24.04-16` | 16   | 64 GB  |
-| `depot-ubuntu-24.04-32` | 32   | 128 GB |
+Supported labels:
+
+| Label                   | Sandbox size | CPUs | RAM    |
+| ----------------------- | ------------ | ---- | ------ |
+| `depot-ubuntu-latest`   | `2x8`        | 2    | 8 GB   |
+| `depot-ubuntu-24.04`    | `2x8`        | 2    | 8 GB   |
+| `depot-ubuntu-24.04-4`  | `4x16`       | 4    | 16 GB  |
+| `depot-ubuntu-24.04-8`  | `8x32`       | 8    | 32 GB  |
+| `depot-ubuntu-24.04-16` | `16x64`      | 16   | 64 GB  |
+| `depot-ubuntu-24.04-32` | `32x128`     | 32   | 128 GB |
+| `depot-ubuntu-24.04-64` | `64x256`     | 64   | 256 GB |
 
 Any label Depot CI can't parse is silently treated as `depot-ubuntu-latest`.
 
