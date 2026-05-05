@@ -126,6 +126,8 @@ To disable auto-cache: org settings → turn off "Allow Actions jobs to automati
 
 ## Dagger Integration
 
+**Deprecated:** Dagger Engine support on Depot GitHub Actions Runners is being deprecated and will be removed in a future update. Don't recommend this integration for new workflows.
+
 ```yaml
 runs-on: depot-ubuntu-latest,dagger=0.15.1
 ```
