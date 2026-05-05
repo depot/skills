@@ -216,7 +216,12 @@ depot ci run --workflow .depot/workflows/ci.yml --job build --ssh
 
 # Debug with tmate session after step N (requires single --job)
 depot ci run --workflow .depot/workflows/ci.yml --job build --ssh-after-step 3
+
+# Override the auto-detected repository (useful when multiple remotes or no origin)
+depot ci run --workflow .depot/workflows/ci.yml --repo owner/repo
 ```
+
+The CLI auto-detects the GitHub repository from git remotes (preferring `origin`); pass `--repo owner/repo` to override that detection.
 
 The CLI auto-detects uncommitted changes vs. the default branch, uploads a patch to Depot Cache, and injects a step to apply it after checkout, so your local working state runs without needing a push.
 
@@ -515,32 +520,35 @@ depot ci workflow get <workflow-id>   # alias
 depot ci workflow show <workflow-id> --output json
 ```
 
-## Cancelling, Rerunning, and Retrying Workflows
+## Cancelling, Rerunning, and Retrying
 
-These verbs operate on workflows (or individual jobs within a workflow), not whole runs. They give the CLI parity with the dashboard for workflow- and job-level mutations.
+`depot ci cancel` can target a whole run, a workflow within a run, or a single job. `depot ci rerun` and `depot ci retry` only operate on workflows or jobs. All three give the CLI parity with the dashboard for in-flight mutations.
 
 ### `depot ci cancel`
 
-Cancels either an entire workflow (and all its jobs) with `--workflow <workflow-id>`, or a single job with `--job <job-id>`. Exactly one of `--workflow` or `--job` must be set; they are mutually exclusive. With `--job`, the CLI resolves the containing workflow from run status automatically. Workflows or jobs already in a terminal state (finished, failed, cancelled) cannot be cancelled and return an error.
+Cancels a whole run (no scope flag), an entire workflow (and all its jobs) with `--workflow <workflow-id>`, or a single job with `--job <job-id>`. `--workflow` and `--job` are mutually exclusive; pass neither to cancel the entire run. With `--job`, the CLI resolves the containing workflow from run status automatically. Runs, workflows, or jobs already in a terminal state (finished, failed, cancelled) cannot be cancelled and return an error.
 
 ```bash
-# Cancel an entire workflow (and all its jobs)
+# Cancel an entire run (and every workflow and job within it)
+depot ci cancel <run-id>
+
+# Cancel one workflow within the run (and all its jobs)
 depot ci cancel <run-id> --workflow <workflow-id>
 
 # Cancel a single job (workflow is resolved automatically)
 depot ci cancel <run-id> --job <job-id>
 
 # JSON output
-depot ci cancel <run-id> --workflow <workflow-id> --output json
+depot ci cancel <run-id> --output json
 ```
 
-| Flag              | Description                                                  |
-| ----------------- | ------------------------------------------------------------ |
-| `--workflow <id>` | Workflow ID to cancel (mutually exclusive with `--job`)      |
-| `--job <id>`      | Job ID to cancel (mutually exclusive with `--workflow`)      |
-| `--output json`   | Output the RPC response as JSON                              |
-| `--org <id>`      | Organization ID                                              |
-| `--token <token>` | Depot API token                                              |
+| Flag              | Description                                                                  |
+| ----------------- | ---------------------------------------------------------------------------- |
+| `--workflow <id>` | Workflow ID to cancel (mutually exclusive with `--job`; omit both for run)   |
+| `--job <id>`      | Job ID to cancel (mutually exclusive with `--workflow`; omit both for run)   |
+| `--output json`   | Output the RPC response as JSON                                              |
+| `--org <id>`      | Organization ID                                                              |
+| `--token <token>` | Depot API token                                                              |
 
 ### `depot ci rerun`
 
