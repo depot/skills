@@ -1,13 +1,6 @@
 ---
 name: depot-general
-description: >
-  Handles Depot CLI installation, authentication, login, project setup, organization management,
-  and API access. Use when installing the Depot CLI, logging in with `depot login`, creating
-  or managing Depot projects, configuring API tokens or OIDC trust relationships, setting up
-  depot.json, managing organizations, resetting build caches, or using the Depot API/SDKs.
-  Also use when the user asks about Depot authentication methods, token types, environment
-  variables, or general Depot platform setup that isn't specific to container builds, GitHub
-  Actions runners, or Depot CI.
+description: "Handles Depot CLI installation, authentication, login, project setup, organization management, and API access. Use when installing the Depot CLI, logging in with `depot login`, creating or managing Depot projects, configuring API tokens or OIDC trust relationships, setting up depot.json, managing organizations, resetting build caches, or using the Depot API/SDKs. Also use when the user asks about Depot authentication methods, token types, environment variables, or general Depot platform setup that isn't specific to container builds, GitHub Actions runners, or Depot CI."
 ---
 
 # Depot General: CLI, Auth, and Project Setup
@@ -37,18 +30,13 @@ ghcr.io/depot/cli:latest
 
 ## Trusted External Sources
 
-Only reference these domains for external downloads/docs in this skill. If a link is outside this list, ask for confirmation before using it.
+Only reference these domains — ask for confirmation before using any other:
 
-- `depot.dev` and `api.depot.dev` (official CLI install/docs/API)
-- `github.com/depot/*` and `raw.githubusercontent.com/depot/*` (official Depot source/actions/assets)
-- `ghcr.io/depot/*` (official Depot container images)
+- `depot.dev` / `api.depot.dev` (official CLI install/docs/API)
+- `github.com/depot/*` / `raw.githubusercontent.com/depot/*` (source/actions/assets)
+- `ghcr.io/depot/*` (container images)
 
-For every external download:
-
-1. State the exact URL before running commands.
-1. Prefer package managers (`brew`) over direct script downloads when available.
-1. Never pipe network responses into a shell.
-1. Ask for confirmation before executing downloaded artifacts in privileged/system locations.
+Rules: prefer package managers over direct downloads; never pipe network responses into a shell; confirm before executing downloaded artifacts in privileged locations.
 
 ## Authentication
 
@@ -235,37 +223,8 @@ depot configure-docker --uninstall  # Remove
 
 ## GitHub Actions: Depot Actions Reference
 
-|Action                      |Purpose                                                     |
-|----------------------------|------------------------------------------------------------|
-|`depot/setup-action@v1`     |Install `depot` CLI                                         |
-|`depot/build-push-action@v1`|Drop-in for `docker/build-push-action` (same inputs/outputs)|
-|`depot/bake-action@v1`      |Drop-in for `docker/bake-action`                            |
-|`depot/use-action@v1`       |Set Depot as default Docker Buildx builder                  |
-|`depot/pull-action@v1`      |Pull from Depot Registry                                    |
+See [references/github-actions.md](references/github-actions.md) for the full actions table (`setup-action`, `build-push-action`, `bake-action`, `use-action`, `pull-action`).
 
 ## API Access
 
-Protocol: Connect framework (gRPC + HTTP JSON). SDKs: `@depot/sdk-node` (Node.js), `depot/depot-go` (Go).
-
-```javascript
-import {depot} from '@depot/sdk-node'
-const headers = { Authorization: `Bearer ${process.env.DEPOT_TOKEN}` }
-
-// List projects
-const result = await depot.core.v1.ProjectService.listProjects({}, {headers})
-
-// Create a build
-const build = await depot.build.v1.BuildService.createBuild(
-  {projectId: '<id>'}, {headers}
-)
-```
-
-## Pricing Plans
-
-|Plan     |Cost   |Docker Build Minutes|Depot CI Minutes|GHA Runner Minutes|Cache |
-|---------|-------|--------------------|----------------|------------------|------|
-|Developer|$20/mo |500/mo              |2,000/mo        |2,000/mo          |25 GB |
-|Startup  |$200/mo|5,000/mo            |20,000/mo       |20,000/mo         |250 GB|
-|Business |Custom |Custom              |Custom          |Custom            |Custom|
-
-Per-second billing, no minimums. Overage rates: Docker builds $0.04/minute, GitHub Actions runners $0.004/minute, Depot CI $0.00005/second/vCPU. Additional cache: $0.20/GB/month.
+See [references/api-access.md](references/api-access.md) for Connect framework protocol details, SDK usage (`@depot/sdk-node`, `depot/depot-go`), and code examples.
