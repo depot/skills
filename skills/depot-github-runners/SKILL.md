@@ -74,7 +74,7 @@ Windows Server 2022 also available: `depot-windows-2022`, etc.
 | `depot-macos-15` / `depot-macos-latest` | 8 | 24 GB | $0.08 |
 | `depot-macos-14` | 8 | 24 GB | $0.08 |
 
-macOS is NOT fully elastic — fixed pool with FIFO queuing. Startup plan+ only.
+macOS is NOT fully elastic — fixed pool with FIFO queuing.
 
 ### Aliases
 

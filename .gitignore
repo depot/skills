@@ -140,3 +140,6 @@ vite.config.ts.timestamp-*
 
 # Claude Code skill build artifacts
 *.skill
+
+# Claude Code per-project local settings
+.claude/
