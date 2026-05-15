@@ -525,7 +525,6 @@ depot ci run list --output json
 ```bash
 # Print a flat record for one run (org, repo, status, trigger, ref, sha, head sha, timestamps)
 depot ci run show <run-id>
-depot ci run get <run-id>            # alias
 
 # JSON output
 depot ci run show <run-id> --output json
@@ -558,7 +557,6 @@ Use `--output json` on `depot ci run list` for machine-readable output.
 ```bash
 # List recent workflows (default 50, max 200)
 depot ci workflow list
-depot ci workflow ls                  # alias
 
 # Filter by workflow name
 depot ci workflow list --name deploy
@@ -590,7 +588,6 @@ depot ci workflow list --output json
 ```bash
 # Show parent run context, executions, jobs, and attempts
 depot ci workflow show <workflow-id>
-depot ci workflow get <workflow-id>   # alias
 
 # JSON output
 depot ci workflow show <workflow-id> --output json
