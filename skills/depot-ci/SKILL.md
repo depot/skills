@@ -674,9 +674,9 @@ depot ci retry <run-id> --job <job-id> --output json
 
 ## Compatibility with GitHub Actions
 
-Depot CI runs GitHub Actions YAML but doesn't accept every GHA feature. The full support matrix lives in `references/github-actions-compatibility.md` under this skill.
+Depot CI executes GitHub Actions YAML workflows. There are a few limitations where compatibility isn't 1:1. The full support and compatibility list is in `references/github-actions-compatibility.md` under this skill.
 
-Read that reference when you need to answer or act on any of these:
+Read the compatibility reference when you need to answer or act on any of the following or similar questions:
 
 - Whether a specific workflow-, job-, or step-level field is supported, for example `concurrency`, `jobs.<id>.environment`, `jobs.<id>.snapshot`, `jobs.<id>.container`, `jobs.<id>.services`, `jobs.<id>.strategy.matrix`, `steps[*].shell`.
 - Whether a trigger event is accepted: the supported list (`push`, `pull_request`, `pull_request_target`, `schedule`, `workflow_call`, `workflow_dispatch`, `workflow_run`, `merge_group`) and the GitHub-only events Depot CI rejects (for example, `release`, `repository_dispatch`, `issues`, `deployment`, `branch_protection_rule`).
