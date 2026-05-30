@@ -380,6 +380,9 @@ The command waits up to 5 minutes for the job sandbox to be provisioned if it ha
 # Check run status (shows workflows -> jobs -> attempts hierarchy)
 depot ci status <run-id>
 
+# JSON output (full workflow/job/attempt tree, including SSH and log download metadata)
+depot ci status <run-id> --output json
+
 # Fetch logs (accepts run ID, job ID, or attempt ID)
 depot ci logs <run-id>
 depot ci logs <attempt-id>
@@ -395,12 +398,85 @@ When given a run or job ID, `depot ci logs` resolves to the latest attempt autom
 
 ### Logs flags
 
-| Flag                | Description                                             |
-| ------------------- | ------------------------------------------------------- |
-| `--job <key>`       | Job key to select (required when run has multiple jobs) |
-| `--workflow <path>` | Workflow path to filter jobs (for example, `ci.yml`)    |
-| `--org <id>`        | Organization ID                                         |
-| `--token <token>`   | Depot API token                                         |
+| Flag                   | Description                                                                     |
+| ---------------------- | ------------------------------------------------------------------------------- |
+| `--job <key>`          | Job key to select (required when run has multiple jobs)                         |
+| `--workflow <path>`    | Workflow path to filter jobs (for example, `ci.yml`)                            |
+| `-f, --follow`         | Follow live logs as they're produced                                            |
+| `--timestamps`         | Prefix plain log lines with UTC timestamps                                      |
+| `-o, --output`         | Output format: `text` (default) or `json` (newline-delimited events)            |
+| `--output-file <path>` | Write a finite log export to the given file path (incompatible with `--follow`) |
+| `--org <id>`           | Organization ID                                                                 |
+| `--token <token>`      | Depot API token                                                                 |
+
+Combined modes:
+
+- `--follow` streams the live attempt; pair it with `--output json` to emit newline-delimited events. JSON streaming includes `line` events plus `status` events (attempt state changes) and an `end` event with final status and line count.
+- Each `line` event carries `timestamp`, `timestamp_ms`, `stream` (`stdout`/`stderr`), `step_key`, `step_id`, `step_name`, `line_number`, and `body`.
+- `--output-file` cannot be combined with `--follow`. Use `--output json --output-file logs.jsonl` to download a JSONL export.
+
+## Step Summaries
+
+Fetches the GitHub Actions step summary markdown (`$GITHUB_STEP_SUMMARY`) that a job attempt produced.
+
+```bash
+# By attempt ID
+depot ci summary <attempt-id>
+
+# By job ID (resolves to the current/latest attempt)
+depot ci summary <job-id>
+
+# JSON output (includes metadata: org/run/workflow/job/attempt IDs, status, step count, markdown)
+depot ci summary <attempt-id> --output json
+```
+
+If the attempt produced no summary, the command prints a short empty-state message and exits 0.
+
+### `summary` flags
+
+| Flag                | Description                                                                |
+| ------------------- | -------------------------------------------------------------------------- |
+| `-o, --output`      | Output format: `text` (default) or `json`                                  |
+| `--org <id>`        | Organization ID                                                            |
+| `--token <token>`   | Depot API token                                                            |
+
+## CPU and Memory Metrics
+
+Fetches CPU and memory utilization for one attempt, every attempt of a job, or every job in a run.
+
+```bash
+# Positional attempt ID (text summary of an attempt's CPU/memory)
+depot ci metrics <attempt-id>
+
+# Equivalent with --attempt flag
+depot ci metrics --attempt <attempt-id>
+
+# Every attempt of a job
+depot ci metrics --job <job-id>
+
+# Every job and attempt in a run
+depot ci metrics --run <run-id>
+
+# Per-sample time series for one attempt (samples array only present with --attempt or positional)
+depot ci metrics <attempt-id> --output json
+
+# Per-attempt summary stats for a job or run (no samples array)
+depot ci metrics --job <job-id> --output json
+depot ci metrics --run <run-id> --output json
+```
+
+The positional `<attempt-id>` and the `--attempt`, `--job`, `--run` flags are mutually exclusive. Run-level queries can hit a server-side sample limit; the error suggests narrowing to `--job <job-id>` or `<attempt-id>`.
+
+### `metrics` flags
+
+| Flag                     | Description                                                                |
+| ------------------------ | -------------------------------------------------------------------------- |
+| `--attempt <attempt-id>` | Job attempt ID (alias for the positional argument)                         |
+| `--job <job-id>`         | Show metrics for every attempt of the given job                            |
+| `--run <run-id>`         | Show metrics for every job and attempt in the given run                    |
+| `-o, --output`           | Output format: `text` (default) or `json`                                  |
+| `--org <id>`             | Organization ID                                                            |
+| `--token <token>`        | Depot API token                                                            |
 
 ## Listing Runs and Triage Flow
 
@@ -449,7 +525,6 @@ depot ci run list --output json
 ```bash
 # Print a flat record for one run (org, repo, status, trigger, ref, sha, head sha, timestamps)
 depot ci run show <run-id>
-depot ci run get <run-id>            # alias
 
 # JSON output
 depot ci run show <run-id> --output json
@@ -482,7 +557,6 @@ Use `--output json` on `depot ci run list` for machine-readable output.
 ```bash
 # List recent workflows (default 50, max 200)
 depot ci workflow list
-depot ci workflow ls                  # alias
 
 # Filter by workflow name
 depot ci workflow list --name deploy
@@ -514,7 +588,6 @@ depot ci workflow list --output json
 ```bash
 # Show parent run context, executions, jobs, and attempts
 depot ci workflow show <workflow-id>
-depot ci workflow get <workflow-id>   # alias
 
 # JSON output
 depot ci workflow show <workflow-id> --output json
@@ -601,61 +674,20 @@ depot ci retry <run-id> --job <job-id> --output json
 
 ## Compatibility with GitHub Actions
 
-### Supported
+Depot CI executes GitHub Actions YAML workflows. There are a few limitations where compatibility isn't 1:1. The full support and compatibility list is in `references/github-actions-compatibility.md` under this skill.
 
-#### Workflow level
+Read the compatibility reference when you need to answer or act on any of the following or similar questions:
 
-`name`, `run-name`, `on`, `permissions`, `env`, `concurrency`, `defaults`, `jobs`, `on.workflow_call` (with inputs, outputs, secrets)
+- Whether a specific workflow-, job-, or step-level field is supported, for example `concurrency`, `jobs.<id>.environment`, `jobs.<id>.snapshot`, `jobs.<id>.container`, `jobs.<id>.services`, `jobs.<id>.strategy.matrix`, `steps[*].shell`.
+- Whether a trigger event is accepted: the supported list (`push`, `pull_request`, `pull_request_target`, `schedule`, `workflow_call`, `workflow_dispatch`, `workflow_run`, `merge_group`) and the GitHub-only events Depot CI rejects (for example, `release`, `repository_dispatch`, `issues`, `deployment`, `branch_protection_rule`).
+- Which expression contexts (`github`, `env`, `vars`, `secrets`, `needs`, `strategy`, `matrix`, `steps`, `job`, `runner`, `inputs`) and functions (`always()`, `success()`, `failure()`, `cancelled()`, `case()`, `contains()`, `startsWith()`, `endsWith()`, `format()`, `join()`, `toJSON()`, `fromJSON()`, `hashFiles()`) are available.
+- Which `permissions` scopes work (`actions`, `checks`, `contents`, `id-token`, `metadata`, `pull_requests`, `statuses`, `workflows`).
+- Which action types run (JavaScript Node 12/16/20/24, Composite, Docker).
+- Which `runs-on` Depot runner labels and sandbox sizes Depot CI supports (x86_64 only, no Arm, macOS, or Windows), and how unrecognized labels are treated.
+- Diagnosing why `depot ci migrate` auto-disabled a job, stripped a trigger from `on:`, or remapped a `runs-on` label.
+- Recommending workarounds for known unsupported features (cross-repo reusable workflows, fork-triggered PRs, deployment environments).
 
-#### Triggers
-
-`push` (branches, tags, paths), `pull_request` (branches, paths), `pull_request_target`, `schedule`, `workflow_call`, `workflow_dispatch` (with inputs), `workflow_run`, `merge_group`
-
-#### Job level
-
-`name`, `needs`, `if`, `permissions`, `outputs`, `env`, `defaults`, `timeout-minutes`, `concurrency`, `strategy` (matrix, fail-fast, max-parallel), `continue-on-error`, `container`, `services`, `uses` (reusable workflows), `with`, `secrets`, `secrets.inherit`, `steps`
-
-#### Step level
-
-`id`, `name`, `if`, `uses`, `run`, `shell`, `with`, `env`, `working-directory`, `continue-on-error`, `timeout-minutes`
-
-#### Permissions
-
-`actions`, `checks`, `contents`, `id-token`, `metadata`, `pull_requests`, `statuses`, `workflows`
-
-#### Expressions
-
-`github`, `env`, `vars`, `secrets`, `needs`, `strategy`, `matrix`, `steps`, `job`, `runner`, `inputs` contexts. Functions: `always()`, `success()`, `failure()`, `cancelled()`, `case()`, `contains()`, `startsWith()`, `endsWith()`, `format()`, `join()`, `toJSON()`, `fromJSON()`, `hashFiles()`
-
-#### Action types
-
-JavaScript (Node 12/16/20/24), Composite, Docker
-
-### Not Supported
-
-- **Cross-repo reusable workflows**: `uses` referencing workflows in other repositories is not supported. Local reusable workflows work.
-- **Fork-triggered PRs**: `pull_request` and `pull_request_target` from forks not supported yet
-- **Non-Ubuntu runner labels**: all non-Depot labels silently treated as `depot-ubuntu-latest` (no error, runs on Ubuntu)
-- **Deployment environments**: the `environment` field is not supported
-- **GitHub-specific event triggers**: `branch_protection_rule`, `check_run`, `check_suite`, `create`, `delete`, `deployment`, `deployment_status`, `discussion`, `discussion_comment`, `fork`, `gollum`, `image_version`, `issue_comment`, `issues`, `label`, `milestone`, `page_build`, `public`, `pull_request_comment`, `pull_request_review`, `pull_request_review_comment`, `registry_package`, `release`, `repository_dispatch`, `status`, `watch`
-
-### Runner labels
-
-Depot CI sandboxes are x86_64 only. There is no Arm, macOS, or Windows support: those Depot GitHub Actions runner labels (`depot-ubuntu-*-arm`, `depot-macos-*`, `depot-windows-*`) are not compatible with Depot CI.
-
-Supported labels:
-
-| Label                   | Sandbox size | CPUs | RAM    |
-| ----------------------- | ------------ | ---- | ------ |
-| `depot-ubuntu-latest`   | `2x8`        | 2    | 8 GB   |
-| `depot-ubuntu-24.04`    | `2x8`        | 2    | 8 GB   |
-| `depot-ubuntu-24.04-4`  | `4x16`       | 4    | 16 GB  |
-| `depot-ubuntu-24.04-8`  | `8x32`       | 8    | 32 GB  |
-| `depot-ubuntu-24.04-16` | `16x64`      | 16   | 64 GB  |
-| `depot-ubuntu-24.04-32` | `32x128`     | 32   | 128 GB |
-| `depot-ubuntu-24.04-64` | `64x256`     | 64   | 256 GB |
-
-Any label Depot CI can't parse is silently treated as `depot-ubuntu-latest`.
+For routine migrate, run, secrets, or debug tasks that don't depend on a specific GHA feature, you don't need to load `references/github-actions-compatibility.md`.
 
 ## Directory Structure
 
