@@ -73,6 +73,8 @@ For every external download:
 depot login                           # Interactive browser login
 depot login --org-id 1234567890       # Specify org
 depot login --clear                   # Clear existing token first
+depot login --quiet                   # Silent exit-0 no-op if already logged in (for defensive scripts)
+depot login token                     # Print the stored API token to stdout; errors if not logged in
 depot logout                          # Remove saved token
 ```
 
