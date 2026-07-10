@@ -28,7 +28,7 @@ Nearly every `depot ci` command (and `depot tests`) accepts:
 
 - `--org <id>`: organization ID, required when the user belongs to multiple organizations (see Org Context Check below).
 - `--token <token>`: Depot API token.
-- `-o, --output json`: machine-readable output, useful for agents and scripting.
+- `-o, --output json`: machine-readable output, useful for agents and scripting. Most `depot ci` subcommands accept the `-o` shorthand, but `depot tests`, `depot ci secrets`, and `depot ci vars` accept only the long `--output` form.
 
 Per-command tables in the reference files omit these to cut noise; assume they're available.
 
@@ -122,6 +122,9 @@ depot ci run --org <org-id> --workflow .depot/workflows/ci.yml
 # Run specific jobs only
 depot ci run --workflow .depot/workflows/ci.yml --job build --job test
 
+# Trigger a run and stream its logs live
+depot ci run --workflow .depot/workflows/ci.yml --job test --follow
+
 # Run a job and connect via SSH
 depot ci run --workflow .depot/workflows/ci.yml --job build --ssh
 
@@ -132,7 +135,7 @@ depot ci run --workflow .depot/workflows/ci.yml --job build --ssh-after-step 3
 depot ci run --workflow .depot/workflows/ci.yml --repo owner/repo
 ```
 
-The CLI auto-detects the GitHub repository from git remotes (preferring `origin`); pass `--repo owner/repo` to override. It also auto-detects uncommitted changes vs. the default branch, uploads a patch to Depot Cache, and injects a step to apply it after checkout, so your local working state runs without needing a push. Use `--ssh` / `--ssh-after-step` to start a debug session when launching a new run; use `depot ci ssh` to connect to an already-running job.
+The CLI auto-detects the GitHub repository from git remotes (preferring `origin`); pass `--repo owner/repo` to override. It also auto-detects uncommitted changes vs. the default branch, uploads a patch to Depot Cache, and injects a step to apply it after checkout, so your local working state runs without needing a push. Use `--ssh` / `--ssh-after-step` to start a debug session when launching a new run; use `depot ci ssh` to connect to an already-running job. Pass `--follow` (or `-f`) to stream the triggered run's logs as soon as it starts: it follows the single `--job` you request, or auto-selects when the run has one job and prompts when several are running. `--follow` cannot be combined with `--ssh` / `--ssh-after-step`.
 
 ## Dispatching Workflows
 
@@ -149,38 +152,55 @@ depot ci dispatch --repo depot/cli --workflow deploy.yml --ref main --output jso
 
 ## Custom Images
 
-Build a custom image once and reuse it across jobs to skip repeated setup steps.
+Build a custom image once and reuse it across jobs to skip repeated setup steps. A custom image is a snapshot of a Depot CI sandbox, stored in your org's Depot registry, that any job in any workflow can reference by name.
 
 ### Build the image
 
-Use `depot/snapshot-action` (Depot CI only, not compatible with GitHub Actions):
+Add the `snapshot:` keyword to a job that runs your setup steps. After the steps complete, Depot captures the sandbox state and pushes it to the Depot registry as a reusable image. Snapshot jobs first check whether the requested tags already exist: if they do, Depot skips the job and reuses the snapshot; if not, Depot runs the job and creates it.
 
 ```yaml
 jobs:
   build-image:
     runs-on: depot-ubuntu-latest
+    snapshot: ci-base:v1
     steps:
-      - run: sudo apt-get install -y your-tool
-      - uses: depot/snapshot-action@v1
-        with:
-          image: <org-id>.registry.depot.dev/my-ci-image:latest
+      - run: sudo apt-get update && sudo apt-get install -y your-tool
 ```
+
+For advanced configuration, use the expanded `snapshot:` form. The `with:` block configures the underlying `depot/snapshot-action`; for example, `max-age` forces a rebuild after the configured age:
+
+```yaml
+jobs:
+  build-image:
+    runs-on: depot-ubuntu-latest
+    snapshot:
+      image-name: ci-base
+      version: v1
+      with:
+        max-age: 5d
+    steps:
+      - run: sudo apt-get update && sudo apt-get install -y your-tool
+```
+
+If no version is given, Depot uses the `latest` tag. An explicit version like `v1` tags the snapshot as both `v1` and `latest`, so consumers can pin a version or follow `latest`.
 
 ### Use the image
 
-Reference it in any Depot CI job with the `runs-on` object syntax:
+Reference the image in any Depot CI job with the `runs-on` object syntax, specifying `size` and `image` (both required):
 
 ```yaml
 jobs:
   test:
     runs-on:
       size: 2x8
-      image: <org-id>.registry.depot.dev/my-ci-image:latest
+      image: ci-base
     steps:
       - uses: actions/checkout@v4
 ```
 
-Available sizes: `2x8`, `4x16`, `8x32`, `16x64`, `32x128` (CPUs x RAM in GB).
+The `image` value can be a shorthand name like `ci-base` (which Depot expands to `{orgId}.registry.depot.dev/depot/snapshots/ci-base`) or a full Depot Registry reference `{orgId}.registry.depot.dev/some-image`. It must reference an image created by a snapshot job, not an arbitrary image.
+
+Available sizes: `2x8`, `4x16`, `8x32`, `16x64`, `32x128`, `64x256` (CPUs x RAM in GB).
 
 **Constraints:** images get pushed to and must be pulled from the Depot registry (`registry.depot.dev`), external registries are not supported.
 
@@ -229,10 +249,59 @@ Control failure behavior with `fail-fast:`. It defaults to `true` (cancels remai
       run: pnpm type-check
 ```
 
+Set `continue-on-error: true` on an individual step inside a `parallel:` block to absorb that step's failure so the group can still succeed. This differs from `fail-fast:`, which only controls whether the remaining steps are cancelled when a failure occurs, not whether the group fails:
+
+```yaml
+- parallel:
+    - name: Optional check
+      continue-on-error: true
+      run: pnpm optional-check
+    - name: Required check
+      run: pnpm required-check
+```
+
 **Limitations:**
 
 - `parallel:` cannot be nested inside another `parallel:` (use `sequential:` inside `parallel:` instead).
 - Step `id` values must be unique across the entire job (including across different parallel blocks).
+
+## Retry Steps
+
+Automatically re-run a failed `run:` step to recover from flaky commands (network blips, transient registry errors) by adding a `retry:` key. Depot re-runs the step in place after a backoff delay and lets the job continue if a later attempt succeeds. Retries fire on any non-zero exit (no exit-code filtering) and are supported on `run:` steps only; `retry:` on a `uses:` action step is rejected at parse time, because actions carry `post:` and state machinery that is unsafe to re-run.
+
+Shorthand form sets the number of additional attempts:
+
+```yaml
+steps:
+  - run: npm ci
+    retry: 3   # up to 4 total runs
+```
+
+Structured form controls backoff and delays:
+
+```yaml
+steps:
+  - run: ./flaky-integration-test.sh
+    retry:
+      retries: 3            # additional attempts after the first run (1-10)
+      backoff: exponential  # 'constant' (default) or 'exponential'
+      delay-seconds: 5      # base delay before the first retry (default 5)
+      max-delay-seconds: 60 # cap on a single delay (default 60)
+```
+
+`retries: N` means up to `N + 1` total runs. `constant` waits `delay-seconds` before every retry; `exponential` doubles the wait each attempt (attempt _n_ waits `delay-seconds × 2^(n-1)`) up to `max-delay-seconds`. `timeout-minutes` applies per attempt (each gets a fresh budget), and `continue-on-error` is applied only after all retries are exhausted. State is not reset between attempts, since retries reuse the same sandbox, so prepend your own cleanup if a step needs a clean slate.
+
+## Sandbox Capabilities
+
+- **Nested virtualization**: every Depot CI sandbox exposes `/dev/kvm` with hardware virtualization enabled by default, so KVM/QEMU, Android emulator, and VM-based end-to-end tests run without extra configuration.
+- **`DEPOT_JOB_URL`**: each job's environment includes `DEPOT_JOB_URL`, a direct link to the job in the Depot dashboard.
+- **GitHub checks**: Depot CI automatically reports a GitHub check for each job in a workflow run.
+
+## OIDC for Cloud Authentication
+
+Depot CI issues a signed JWT to each job so workflows can authenticate to cloud providers (AWS, GCP, Azure) with short-lived tokens instead of static credentials. Set `permissions: id-token: write` in the workflow for the token to be issued; the issuer is `https://identity.depot.dev`. Depot injects the token-request credentials into the environment, so standard actions like `aws-actions/configure-aws-credentials` work without extra configuration.
+
+For provider trust-policy setup, the `sub` spiffe claim format and wildcards, the full token claim reference, and migrating an existing GitHub Actions OIDC trust policy, read `references/oidc.md`.
 
 ## Running, Monitoring, and Debugging Runs
 
@@ -288,7 +357,7 @@ Depot CI executes GitHub Actions YAML workflows. There are a few limitations whe
 Read the compatibility reference when you need to answer or act on any of the following or similar questions:
 
 - Whether a specific workflow-, job-, or step-level field is supported, for example `concurrency`, `jobs.<id>.environment`, `jobs.<id>.snapshot`, `jobs.<id>.container`, `jobs.<id>.services`, `jobs.<id>.strategy.matrix`, `steps[*].shell`.
-- Whether a trigger event is accepted: the supported list (`push`, `pull_request`, `pull_request_target`, `schedule`, `workflow_call`, `workflow_dispatch`, `workflow_run`, `merge_group`) and the GitHub-only events Depot CI rejects (for example, `release`, `repository_dispatch`, `issues`, `deployment`, `branch_protection_rule`).
+- Whether a trigger event is accepted: the supported list (`push`, `pull_request`, `pull_request_target`, `pull_request_review`, `deployment_status`, `repository_dispatch`, `schedule`, `workflow_call`, `workflow_dispatch`, `workflow_run`, `merge_group`) and the GitHub-only events Depot CI rejects (for example, `release`, `issues`, `deployment`, `branch_protection_rule`).
 - Which expression contexts (`github`, `env`, `vars`, `secrets`, `needs`, `strategy`, `matrix`, `steps`, `job`, `runner`, `inputs`) and functions (`always()`, `success()`, `failure()`, `cancelled()`, `case()`, `contains()`, `startsWith()`, `endsWith()`, `format()`, `join()`, `toJSON()`, `fromJSON()`, `hashFiles()`) are available.
 - Which `permissions` scopes work (`actions`, `checks`, `contents`, `id-token`, `metadata`, `pull_requests`, `statuses`, `workflows`).
 - Which action types run (JavaScript Node 12/16/20/24, Composite, Docker).
