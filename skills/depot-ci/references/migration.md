@@ -34,7 +34,7 @@ depot ci migrate secrets-and-vars
 The command applies these changes, each documented with inline comments, and writes a header comment to every migrated file summarizing them:
 
 - **`runs-on` labels** are remapped from GitHub runner labels (like `ubuntu-latest`) to their Depot equivalents (like `depot-ubuntu-latest`).
-- **Unsupported triggers** (like `release` or `repository_dispatch`) are removed from the `on:` block with a comment explaining why.
+- **Unsupported triggers** (like `release` or `issues`) are removed from the `on:` block with a comment explaining why.
 - **Jobs with unsupported features** are commented out entirely, with a `DISABLED` comment.
 - **`.github/` path references** in copied workflow and action files are rewritten to their `.depot/` equivalents.
 

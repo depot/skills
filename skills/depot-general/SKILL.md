@@ -54,18 +54,20 @@ For every external download:
 
 ### Token Types
 
-|Type             |Scope                          |Created Via                                   |Use Case                             |
-|-----------------|-------------------------------|----------------------------------------------|-------------------------------------|
-|**User token**   |All projects in all user's orgs|`depot login` or Account Settings → API Tokens|Local development                    |
-|**Project token**|Single project                 |Project Settings                              |CI environments                      |
-|**Org API token**|Single organization            |Org Settings → API Tokens                     |API access, automation               |
-|**OIDC trust**   |Single project (short-lived)   |Project Settings → Trust Relationships        |CI without static secrets (preferred)|
+|Type                  |Scope                          |Created Via                                   |Use Case                             |
+|----------------------|-------------------------------|----------------------------------------------|-------------------------------------|
+|**User token**        |All projects in all user's orgs|`depot login` or Account Settings → API Tokens|Local development                    |
+|**Project token**     |Single project                 |Project Settings                              |CI environments                      |
+|**Organization token**|Single organization            |Org Settings → API Tokens                     |API access, automation               |
+|**Pull token**        |Depot Registry (read-only)     |`depot pull-token --project <id>` (expires after 1 hour)|Environments that only pull images (production deploys, CI pulling base images)|
+|**OIDC trust**        |Single project (short-lived)   |Project Settings → Trust Relationships        |CI without static secrets (preferred)|
 
 ### Token Resolution Order
 
 1. `--token` flag (explicit on command)
 1. `DEPOT_TOKEN` environment variable
 1. Locally stored token (from `depot login`)
+1. OIDC token (if available)
 
 ### Login
 
@@ -87,6 +89,7 @@ Configure in Project Settings → Trust Relationships. No static secrets, just s
 |**GitHub Actions**|GitHub org/user name + repository name. Requires `permissions: { id-token: write }` in workflow.|
 |**CircleCI**      |Organization UUID + Project UUID (must use UUIDs, not friendly names)                           |
 |**Buildkite**     |Organization slug + Pipeline slug                                                               |
+|**GitLab CI**     |GitLab namespace ID + project ID. Requires a `DEPOT_OIDC_TOKEN` id_token with `aud: https://depot.dev` in `.gitlab-ci.yml`.|
 |**RWX**           |Vault subject                                                                                   |
 
 ### GitHub Actions OIDC Example
@@ -123,7 +126,7 @@ steps:
 
 ```bash
 docker login registry.depot.dev -u x-token -p <any-depot-token>
-# Username is always "x-token". Password is any user, project, org, or OIDC token.
+# Username is always "x-token". Password is any user, project, org, OIDC, or pull token.
 
 # Kubernetes secret
 kubectl create secret docker-registry regcred \

@@ -333,7 +333,7 @@ depot tests <attempt-id> --ci --output json
 | `--file <name>`      | Source filename to include                                                           |
 | `--page-size <n>`    | Results per page (default `100`, max `500`)                                          |
 | `--page-token <tok>` | Token to fetch the next page                                                         |
-| `-o, --output`       | Output format: `auto` (default), `table`, or `json`                                  |
+| `--output`           | Output format: `auto` (default), `table`, or `json` (no `-o` shorthand)              |
 
 `--job` and `--workflow` can only be used with `--ci`.
 
