@@ -361,7 +361,7 @@ Read the compatibility reference when you need to answer or act on any of the fo
 - Which expression contexts (`github`, `env`, `vars`, `secrets`, `needs`, `strategy`, `matrix`, `steps`, `job`, `runner`, `inputs`) and functions (`always()`, `success()`, `failure()`, `cancelled()`, `case()`, `contains()`, `startsWith()`, `endsWith()`, `format()`, `join()`, `toJSON()`, `fromJSON()`, `hashFiles()`) are available.
 - Which `permissions` scopes work (`actions`, `checks`, `contents`, `id-token`, `metadata`, `pull_requests`, `statuses`, `workflows`).
 - Which action types run (JavaScript Node 12/16/20/24, Composite, Docker).
-- Which `runs-on` Depot runner labels and sandbox sizes Depot CI supports (x86_64 only, no Arm, macOS, or Windows), and how unrecognized labels are treated.
+- Which `runs-on` Depot runner labels and sandbox sizes Depot CI supports (x86_64 and Arm only, no macOS nor Windows), and how unrecognized labels are treated.
 - Diagnosing why `depot ci migrate` auto-disabled a job, stripped a trigger from `on:`, or remapped a `runs-on` label.
 - Recommending workarounds for known unsupported features (cross-repo reusable workflows, fork-triggered PRs, deployment environments).
 
