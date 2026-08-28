@@ -46,19 +46,27 @@ JavaScript (Node 12/16/20/24), Composite, Docker.
 
 ## Runner labels
 
-Depot CI sandboxes are x86_64 only. There is no Arm, macOS, or Windows support: those Depot GitHub Actions runner labels (`depot-ubuntu-*-arm`, `depot-macos-*`, `depot-windows-*`) are not compatible with Depot CI.
+Depot CI sandboxes are x86_64 and arm only. There is no macOS or Windows support: those Depot GitHub Actions runner labels (`depot-macos-*`, `depot-windows-*`) are not compatible with Depot CI.
 
 Supported labels:
 
-| Label                   | Sandbox size | CPUs | RAM    |
-| ----------------------- | ------------ | ---- | ------ |
-| `depot-ubuntu-latest`   | `2x8`        | 2    | 8 GB   |
-| `depot-ubuntu-24.04`    | `2x8`        | 2    | 8 GB   |
-| `depot-ubuntu-24.04-4`  | `4x16`       | 4    | 16 GB  |
-| `depot-ubuntu-24.04-8`  | `8x32`       | 8    | 32 GB  |
-| `depot-ubuntu-24.04-16` | `16x64`      | 16   | 64 GB  |
-| `depot-ubuntu-24.04-32` | `32x128`     | 32   | 128 GB |
-| `depot-ubuntu-24.04-64` | `64x256`     | 64   | 256 GB |
+| Label                       | Sandbox size | CPUs | RAM    |
+| --------------------------- | ------------ | ---- | ------ |
+| `depot-ubuntu-latest`       | `2x8`        | 2    | 8 GB   |
+| `depot-ubuntu-24.04`        | `2x8`        | 2    | 8 GB   |
+| `depot-ubuntu-24.04-4`      | `4x16`       | 4    | 16 GB  |
+| `depot-ubuntu-24.04-8`      | `8x32`       | 8    | 32 GB  |
+| `depot-ubuntu-24.04-16`     | `16x64`      | 16   | 64 GB  |
+| `depot-ubuntu-24.04-32`     | `32x128`     | 32   | 128 GB |
+| `depot-ubuntu-24.04-64`     | `64x256`     | 64   | 256 GB |
+| `depot-ubuntu-latest-arm`   | `2x8`        | 2    | 8 GB   |
+| `depot-ubuntu-24.04-arm`    | `2x8`        | 2    | 8 GB   |
+| `depot-ubuntu-24.04-4-arm`  | `4x16`       | 4    | 16 GB  |
+| `depot-ubuntu-24.04-8-arm`  | `8x32`       | 8    | 32 GB  |
+| `depot-ubuntu-24.04-16-arm` | `16x64`      | 16   | 64 GB  |
+| `depot-ubuntu-24.04-32-arm` | `32x128`     | 32   | 128 GB |
+| `depot-ubuntu-24.04-64-arm` | `64x256`     | 64   | 256 GB |
+
 
 Any label Depot CI can't parse is silently treated as `depot-ubuntu-latest`.
 
