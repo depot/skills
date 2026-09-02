@@ -279,6 +279,8 @@ depot ci artifacts download <artifact-id> --output-file coverage.zip
 
 Diagnoses a failed run, workflow, job, or attempt using bounded stored failure context. The command groups similar failures across attempts and, where available, surfaces a diagnosis and a possible fix for each group, with evidence lines and drill-down commands. Exactly one of `--run`, `--workflow`, `--job`, or `--attempt` is required; positional target IDs aren't accepted.
 
+The diagnosis and possible fix are AI-generated. Verify each suggestion against the evidence and job logs before changing code.
+
 ```bash
 depot ci diagnose --run <run-id>
 depot ci diagnose --workflow <workflow-id>

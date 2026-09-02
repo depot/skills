@@ -42,12 +42,12 @@ Use a single label. Format: `depot-{os}-{version}[-{arch}][-{size}]`
 
 | Label | CPUs | RAM | Disk | $/min | Minutes multiplier |
 |-------|------|-----|------|-------|--------------------|
-| `depot-ubuntu-24.04` | 2 | 8 GB | 100 GB | $0.004 | 1x |
-| `depot-ubuntu-24.04-4` | 4 | 16 GB | 130 GB | $0.008 | 2x |
-| `depot-ubuntu-24.04-8` | 8 | 32 GB | 150 GB | $0.016 | 4x |
-| `depot-ubuntu-24.04-16` | 16 | 64 GB | 180 GB | $0.032 | 8x |
-| `depot-ubuntu-24.04-32` | 32 | 128 GB | 200 GB | $0.064 | 16x |
-| `depot-ubuntu-24.04-64` | 64 | 256 GB | 250 GB | $0.128 | 32x |
+| `depot-ubuntu-24.04` | 2 | 8 GB | 100 GB | $0.006 | 1x |
+| `depot-ubuntu-24.04-4` | 4 | 16 GB | 130 GB | $0.012 | 2x |
+| `depot-ubuntu-24.04-8` | 8 | 32 GB | 150 GB | $0.024 | 4x |
+| `depot-ubuntu-24.04-16` | 16 | 64 GB | 180 GB | $0.048 | 8x |
+| `depot-ubuntu-24.04-32` | 32 | 128 GB | 200 GB | $0.096 | 16x |
+| `depot-ubuntu-24.04-64` | 64 | 256 GB | 250 GB | $0.192 | 32x |
 
 The minutes multiplier is the billing driver: billed minutes = elapsed minutes × multiplier, so larger runners consume your included minutes faster.
 
@@ -81,7 +81,7 @@ macOS is NOT fully elastic — fixed pool with FIFO queuing.
 
 ### Aliases
 
-`depot-ubuntu-latest` → Ubuntu 24.04, `depot-windows-latest` → Windows 2025, `depot-macos-latest` → macOS 15
+`depot-ubuntu-latest` → Ubuntu 24.04, `depot-windows-latest` → Windows 2025, `depot-macos-latest` → macOS 26
 
 ## Migration Example
 

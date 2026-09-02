@@ -14,6 +14,8 @@ Depot CI runs GitHub Actions YAML on Depot's own orchestrator and compute, so mo
 
 `repository_dispatch` lets you trigger runs from outside GitHub via the GitHub API; the custom event type and `client_payload` are available through `github.event.action` and `github.event.client_payload`. GitHub delivers these events only against the default branch, so the default-branch workflow runs.
 
+Depot CI supports native GitHub stacked pull requests for `pull_request` workflows. Depot evaluates the `branches` filter against the stack's ultimate base branch, then runs the workflow for each pull request using its own merge ref. `github.event.pull_request.stack` provides `number`, `size`, `position`, `base.ref`, and `base.sha`; the value is `null` for an ordinary pull request.
+
 ### Job level
 
 `name`, `needs`, `if`, `permissions`, `outputs`, `env`, `defaults`, `timeout-minutes`, `concurrency`, `strategy` (matrix, fail-fast, max-parallel), `continue-on-error`, `container`, `services`, `uses` (reusable workflows), `with`, `secrets`, `secrets.inherit`, `steps`, `snapshot` (custom images from sandbox snapshots)
@@ -24,7 +26,9 @@ Depot CI runs GitHub Actions YAML on Depot's own orchestrator and compute, so mo
 
 ### Permissions
 
-`actions`, `checks`, `contents`, `id-token`, `metadata`, `pull_requests`, `statuses`, `workflows`
+`actions`, `checks`, `code-quality`, `contents`, `id-token`, `metadata`, `pull_requests`, `statuses`, `workflows`
+
+Request `code-quality` explicitly. The `read-all` and `write-all` shorthands do not include it, which preserves compatibility with older Depot Code Access GitHub App installations.
 
 ### Expressions
 
@@ -43,6 +47,12 @@ JavaScript (Node 12/16/20/24), Composite, Docker.
 - **Non-Ubuntu runner labels**: all non-Depot labels silently treated as `depot-ubuntu-latest` (no error, runs on Ubuntu).
 - **Deployment environments**: the `environment` field is not supported.
 - **GitHub-specific event triggers**: `branch_protection_rule`, `check_run`, `check_suite`, `create`, `delete`, `deployment`, `discussion`, `discussion_comment`, `fork`, `gollum`, `image_version`, `issue_comment`, `issues`, `label`, `milestone`, `page_build`, `public`, `pull_request_comment`, `pull_request_review_comment`, `registry_package`, `release`, `status`, `watch`.
+
+### GitHub Packages authentication
+
+`secrets.GITHUB_TOKEN` is a GitHub App token in Depot CI, and GitHub Packages does not accept GitHub App tokens for package access. This limitation applies to every GitHub Packages registry, including GHCR.
+
+For container images, prefer Depot Registry. When GitHub Packages is required, authenticate with a GitHub personal access token that has the required package scope and store it as a Depot CI secret. A personal access token is a long-lived user credential, so account lifetime, rotation, and least-privilege scope require explicit consideration.
 
 ## Runner labels
 

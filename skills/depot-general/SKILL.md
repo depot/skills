@@ -125,15 +125,17 @@ steps:
 ### Depot Registry Auth
 
 ```bash
-docker login registry.depot.dev -u x-token -p <any-depot-token>
+docker login {orgId}.registry.depot.dev -u x-token -p <any-depot-token>
 # Username is always "x-token". Password is any user, project, org, OIDC, or pull token.
 
 # Kubernetes secret
 kubectl create secret docker-registry regcred \
-  --docker-server=registry.depot.dev \
+  --docker-server={orgId}.registry.depot.dev \
   --docker-username=x-token \
   --docker-password=<depot-token>
 ```
+
+Use `{orgId}.registry.depot.dev` for new repositories and custom image names. The legacy `registry.depot.dev/<project-id>:<build-id>` format remains available for existing saved-build usage.
 
 ## Project Setup
 
@@ -143,8 +145,16 @@ depot init
 
 # Create a new project
 depot projects create "my-project"
-depot projects create --region eu-central-1 --cache-storage-policy 100 "my-project"
+depot projects create --region eu-central-1 --cache-storage-policy 100 --cache-policy-keep-days 30 "my-project"
 depot projects create --organization 12345678910 "my-project"
+
+# Inspect a project; omit the ID to use DEPOT_PROJECT_ID or depot.json
+depot projects get
+depot projects get <project-id> --output json
+
+# Update selected project fields
+depot projects update <project-id> --name "New name"
+depot projects update <project-id> --region eu-central-1 --cache-storage-policy 100 --output json
 
 # Delete a project (org admin only, destructive - require explicit confirmation)
 depot projects delete --project-id <id>
@@ -152,6 +162,8 @@ depot projects delete --project-id <id>
 # List projects
 depot projects list
 ```
+
+New projects keep 50 GB of build cache per architecture and retain cache data for 14 days by default. Set `--cache-policy-keep-days 0` during creation for no retention limit. `depot projects update` changes only the supplied name, region, or cache storage policy fields.
 
 ### depot.json
 
@@ -273,4 +285,6 @@ const build = await depot.build.v1.BuildService.createBuild(
 |Startup  |$200/mo|5,000/mo            |20,000/mo       |20,000/mo         |250 GB|
 |Business |Custom |Custom              |Custom          |Custom            |Custom|
 
-Per-second billing, no minimums. Overage rates: Docker builds $0.04/minute, GitHub Actions runners $0.004/minute, Depot CI $0.00005/second/vCPU. Additional cache: $0.20/GB/month.
+Per-second billing, no minimums. Overage rates: Docker builds $0.04/minute, GitHub Actions runners $0.006/minute, Depot CI $0.00005/second/vCPU. Additional cache: $0.20/GB/month.
+
+Developer and Startup plans include 1,000,000 passing test results each month. Additional passing results cost $1 per 1,000,000. Failed, errored, and skipped results are free.
