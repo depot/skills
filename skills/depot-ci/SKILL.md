@@ -16,7 +16,7 @@ description: >
 
 Depot CI is a programmable CI system for engineers and agents. Workflows in Depot CI run entirely on Depot compute with built-in job visibility, debuggability, and control. GitHub Actions is the first syntax Depot CI supports: migrate your existing GitHub Actions workflows, and get fast, reliable runs on optimized infrastructure.
 
-This SKILL.md covers the core workflow plus the most common commands. Detailed flag tables, JSON output shapes, and less-common commands live in three reference files under `references/`, pointed to from the relevant sections below. Load a reference file only when you need detail it points to.
+This SKILL.md covers the core workflow plus the most common commands. Detailed flag tables, JSON output shapes, and less-common commands live in focused files under `references/`, pointed to from the relevant sections below. Load a reference file only when you need the detail it contains.
 
 ## Architecture
 
@@ -303,6 +303,10 @@ Depot CI issues a signed JWT to each job so workflows can authenticate to cloud 
 
 For provider trust-policy setup, the `sub` spiffe claim format and wildcards, the full token claim reference, and migrating an existing GitHub Actions OIDC trust policy, read `references/oidc.md`.
 
+## Datadog CI Visibility
+
+Enable Datadog CI Visibility in the Depot organization settings, then add a Depot CI secret named `DD_API_KEY`. Add `DD_SITE` when the Datadog account uses a region other than `datadoghq.com`. Depot sends each workflow run as a pipeline, with its jobs and steps, directly to Datadog. Reporting is best-effort, so a Datadog failure does not fail the CI run.
+
 ## Running, Monitoring, and Debugging Runs
 
 Common triage and inspection commands:
@@ -350,6 +354,12 @@ Full command index, all in `references/runs-and-debugging.md`:
 
 Read `references/runs-and-debugging.md` when you need a complete flag table, JSON output shape, or any command not shown in the triage examples above.
 
+## Test Results and Timing-Based Splitting
+
+Use `depot tests` to inspect parsed JUnit results. Use `depot tests split`, `depot tests run`, or `depot tests report` to balance tests with historical timings and upload new reports. These three subcommands run only inside Depot CI or Depot GitHub Actions runner jobs.
+
+For candidate identity rules, matrix behavior, reporting requirements, and command examples, read `references/test-splitting.md`.
+
 ## Compatibility with GitHub Actions
 
 Depot CI executes GitHub Actions YAML workflows. There are a few limitations where compatibility isn't 1:1. The full support and compatibility list is in `references/github-actions-compatibility.md`.
@@ -359,7 +369,7 @@ Read the compatibility reference when you need to answer or act on any of the fo
 - Whether a specific workflow-, job-, or step-level field is supported, for example `concurrency`, `jobs.<id>.environment`, `jobs.<id>.snapshot`, `jobs.<id>.container`, `jobs.<id>.services`, `jobs.<id>.strategy.matrix`, `steps[*].shell`.
 - Whether a trigger event is accepted: the supported list (`push`, `pull_request`, `pull_request_target`, `pull_request_review`, `deployment_status`, `repository_dispatch`, `schedule`, `workflow_call`, `workflow_dispatch`, `workflow_run`, `merge_group`) and the GitHub-only events Depot CI rejects (for example, `release`, `issues`, `deployment`, `branch_protection_rule`).
 - Which expression contexts (`github`, `env`, `vars`, `secrets`, `needs`, `strategy`, `matrix`, `steps`, `job`, `runner`, `inputs`) and functions (`always()`, `success()`, `failure()`, `cancelled()`, `case()`, `contains()`, `startsWith()`, `endsWith()`, `format()`, `join()`, `toJSON()`, `fromJSON()`, `hashFiles()`) are available.
-- Which `permissions` scopes work (`actions`, `checks`, `contents`, `id-token`, `metadata`, `pull_requests`, `statuses`, `workflows`).
+- Which `permissions` scopes work (`actions`, `checks`, `code-quality`, `contents`, `id-token`, `metadata`, `pull_requests`, `statuses`, `workflows`). Request `code-quality` explicitly because `read-all` and `write-all` do not include it.
 - Which action types run (JavaScript Node 12/16/20/24, Composite, Docker).
 - Which `runs-on` Depot runner labels and sandbox sizes Depot CI supports (x86_64 and Arm only, no macOS nor Windows), and how unrecognized labels are treated.
 - Diagnosing why `depot ci migrate` auto-disabled a job, stripped a trigger from `on:`, or remapped a `runs-on` label.

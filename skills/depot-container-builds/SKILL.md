@@ -7,7 +7,7 @@ description: >
   failures, optimizing Dockerfile layer caching, using docker-bake.hcl or docker-compose builds,
   or migrating from `docker build` / `docker buildx build` to Depot. Also use when the user
   mentions depot build, depot bake, container builds, image builds, or asks about Depot's
-  build cache, build parallelism, or ephemeral registry.
+  build cache, build parallelism, build autoscaling, or ephemeral registry.
 ---
 
 # Depot Container Builds
@@ -204,6 +204,14 @@ docker build .  # Routes through Depot (look for [depot] prefix in logs)
 |Extra Large|64  |128 GB|$0.16     |4x                |Startup+|
 
 Billed per-second. Large and Extra Large builders consume your included build minutes faster (via the multiplier) in addition to costing more per minute.
+
+## Build Autoscaling
+
+Autoscaling is disabled by default, so Depot routes a project's builds for each architecture to one builder. Enable horizontal autoscaling in the project settings when concurrent builds need separate builders. The settings form preselects 16 builds per instance; Depot starts another builder when concurrent builds reach the configured limit.
+
+Each builder has an independent cache. Heavy autoscaling can reduce cache efficiency, so try a larger builder first when one build needs more CPU or memory. Autoscaling is available on all plans without an additional fee.
+
+One `depot bake` invocation counts as one build for autoscaling, regardless of its target count. Separate project IDs create separate build requests.
 
 ## Depot Registry
 

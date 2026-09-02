@@ -69,17 +69,21 @@ The general steps are the same for any OIDC-compatible provider:
 
 ## The `sub` claim and wildcards
 
-Scope trust policies by matching the `sub` claim. Full form:
+Scope trust policies by matching the `sub` claim from left to right. Full form:
 
 ```
 spiffe://identity.depot.dev/org/<orgID>/ci/github/<owner>/<repo>/ref/<ref>/sandbox/<sandboxID>
 ```
+
+Match the stable segments you need, then wildcard the remainder. The trust domain, organization ID, repository owner and name, and full Git ref are stable for their respective resources. Depot creates a new sandbox ID for every job, so never pin the final `sandbox/<sandboxID>` segment.
 
 Wildcard matches:
 
 - Everything in a GitHub org: `spiffe://identity.depot.dev/org/<orgID>/ci/github/<owner>/*`
 - A specific repository: `spiffe://identity.depot.dev/org/<orgID>/ci/github/<owner>/<repo>/*`
 - A specific branch: `spiffe://identity.depot.dev/org/<orgID>/ci/github/<owner>/<repo>/ref/<ref>/sandbox/*`
+
+AWS IAM exposes standard OIDC claims such as `aud` and `sub`, but it does not expose Depot's GitHub-compatible custom claims as condition keys. On AWS, match `identity.depot.dev:sub` with `StringLike`. Providers that map arbitrary claims into trust conditions can instead match flat claims such as `repository`, `repository_owner`, and `ref`.
 
 ## Migrating from GitHub Actions OIDC
 
@@ -89,7 +93,7 @@ Wildcard matches:
 |---|---|---|
 | Issuer (`iss`) | `https://token.actions.githubusercontent.com` | `https://identity.depot.dev` |
 | Subject (`sub`) | `repo:owner/repo:ref:refs/heads/main` | `spiffe://identity.depot.dev/org/<orgID>/ci/github/<owner>/<repo>/ref/<ref>/sandbox/<sandboxID>` |
-| Repo/branch scoping | `sub` (encoded in the subject) | `sub`, or `repository` + `ref` claims (separate conditions) |
+| Repo/branch scoping | `sub` (encoded in the subject) | `sub`; match stable segments and wildcard the per-job sandbox suffix |
 | JWKS endpoint | `https://token.actions.githubusercontent.com/.well-known/jwks.json` | `https://identity.depot.dev/keys` |
 
 Add `https://identity.depot.dev` as a new identity provider and create a new trust policy rather than modifying the existing GitHub Actions one, so both providers work in parallel during the transition.
