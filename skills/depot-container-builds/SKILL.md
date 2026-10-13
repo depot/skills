@@ -236,6 +236,12 @@ depot pull-token --project <id> <build-id>                    # scoped to a spec
 # Push saved image to another registry
 depot push --project <id> -t registry/image:tag <build-id>
 
+# List saved images as JSON
+depot image list --project <id> --output json
+
+# Delete selected image tags only when requested
+depot image rm --project <id> app:old app:staging
+
 # Docker auth for Depot Registry (each org has its own subdomain)
 docker login {orgId}.registry.depot.dev -u x-token -p <depot-token>
 # Registry URL: {orgId}.registry.depot.dev/your/app:tag
