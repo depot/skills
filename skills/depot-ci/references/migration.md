@@ -42,6 +42,7 @@ Origin compatibility findings identify actions that fail or have reduced functio
 The command applies these changes, each documented with inline comments, and writes a header comment to every migrated file summarizing them:
 
 - **`runs-on` labels** are remapped from GitHub runner labels (like `ubuntu-latest`) to their Depot equivalents (like `depot-ubuntu-latest`).
+- **Unavailable GitHub runner labels** remain unchanged and produce a warning. Custom or conflicting labels also produce migration-summary warnings. Select a supported Depot Ubuntu runner before activating the workflow.
 - **Unsupported triggers** (like `release` or `issues`) are removed from the `on:` block with a comment explaining why.
 - **Jobs with unsupported features** are commented out entirely, with a `DISABLED` comment.
 - **`.github/` path references** in copied workflow and action files are rewritten to their `.depot/` equivalents.

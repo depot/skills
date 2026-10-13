@@ -232,6 +232,7 @@ Before running high-impact commands:
 |`DEPOT_TOKEN`            |Auth token (user, project, or org)                     |
 |`DEPOT_PROJECT_ID`       |Project ID (alternative to `--project` or `depot.json`)|
 |`DEPOT_NO_SUMMARY_LINK=1`|Suppress build links and update notices (useful in CI) |
+|`DEPOT_IN_AUTOMATION=1` |Suppress build summary URLs, saved-image pull/push hints, and update notices; any non-empty value enables suppression, while progress and errors remain|
 |`DEPOT_DISABLE_OTEL=1`   |Disable OpenTelemetry tracing                          |
 
 ## Build and Cache Management

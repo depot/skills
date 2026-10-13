@@ -73,8 +73,8 @@ Windows Server 2022 also available: `depot-windows-2022`, etc.
 
 | Label | CPUs | RAM | Disk | $/min |
 |-------|------|-----|------|-------|
-| `depot-macos-26` | 8 | 24 GB | 400 GB | $0.08 |
-| `depot-macos-15` / `depot-macos-latest` | 8 | 24 GB | 400 GB | $0.08 |
+| `depot-macos-26` / `depot-macos-latest` | 8 | 24 GB | 400 GB | $0.08 |
+| `depot-macos-15` | 8 | 24 GB | 400 GB | $0.08 |
 | `depot-macos-14` | 8 | 24 GB | 400 GB | $0.08 |
 
 macOS is NOT fully elastic — fixed pool with FIFO queuing.
@@ -122,10 +122,13 @@ Actions using the GitHub Actions cache API automatically use **Depot Cache** —
 |Maven    |`settings.xml` pre-populated (cache id `depot-cache`)         |
 |Pants    |`pants.toml` pre-configured — just run `pants package ::`     |
 |moonrepo |Env vars set — just run `moon run build`                      |
+|Xcode 26+|Compilation caching uses Depot Cache automatically on Depot macOS runners|
 
 Cache behavior: repository-scoped, no branch isolation, encrypted, up to 1000 MiB/s throughput, configurable retention (7/14/30 days).
 
 To disable auto-cache: org settings → turn off "Allow Actions jobs to automatically connect to Depot Cache."
+
+For Xcode, the runner sets `XCODE_XCCONFIG_FILE` only when the job does not supply its own configuration file. Set `DEPOT_XCODE_CACHE_ENABLED: '0'` to opt out for a job or workflow. Add `depot/xcode-compilation-cache-summary@v1` after the build to report cache statistics. Xcode compilation caching is not supported on local workstations. See https://depot.dev/docs/cache/integrations/xcode for build settings and troubleshooting.
 
 ## Dagger Integration
 

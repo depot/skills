@@ -136,11 +136,17 @@ depot ci status <run-id>
 
 # JSON output (full workflow/job/attempt tree, including SSH and log download metadata)
 depot ci status <run-id> --output json
+
+# Wait for the final result
+depot ci status <run-id> --wait --output json
 ```
 
 | Flag           | Description                                          |
 | -------------- | --------------------------------------------------- |
 | `-o, --output` | Output as JSON instead of the hierarchical text view |
+| `--wait` | Poll every five seconds until the run finishes, fails, or is cancelled |
+
+With `--wait`, progress goes to stderr and the final status goes to stdout. Exit code is `0` for a finished run and `1` for a failed or cancelled run.
 
 In the JSON tree, `download_available` becomes `true` and `download_command` appears once an attempt reaches `finished`. `ssh_available` and `ssh_command` appear only while an attempt is running with a sandbox.
 
@@ -419,7 +425,7 @@ depot ci rerun <run-id> --output json
 
 ## `depot ci retry`
 
-Retries a single failed or cancelled job with `--job <job-id>`, or every failed/cancelled job in a workflow with `--failed`. Exactly one of `--job` or `--failed` must be set. With `--job` the containing workflow is resolved automatically; with `--failed` on a multi-workflow run, `--workflow <id>` is required. Each retry creates a new attempt; previous attempts remain visible in `depot ci status`.
+Retries a single failed or cancelled job with `--job <job-id>`, or every failed/cancelled job and all downstream jobs in a workflow with `--failed`. Downstream jobs include succeeded and skipped jobs. Exactly one of `--job` or `--failed` must be set. With `--job` the containing workflow is resolved automatically; with `--failed` on a multi-workflow run, `--workflow <id>` is required. Each retry creates a new attempt; previous attempts remain visible in `depot ci status`.
 
 ```bash
 # Retry a single job
@@ -438,7 +444,7 @@ depot ci retry <run-id> --job <job-id> --output json
 | Flag              | Description                                                                        |
 | ----------------- | ---------------------------------------------------------------------------------- |
 | `--job <id>`      | Job ID to retry (mutually exclusive with `--failed`)                               |
-| `--failed`        | Retry every failed/cancelled job in the workflow (mutually exclusive with `--job`) |
+| `--failed`        | Retry failed/cancelled jobs and all downstream jobs (mutually exclusive with `--job`) |
 | `--workflow <id>` | Workflow ID; required with `--failed` when the run has multiple workflows          |
 | `--output json`   | Output the RPC response as JSON                                                    |
 
