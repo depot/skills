@@ -72,8 +72,6 @@ For every external download:
 
 ### Login
 
-`depot projects get` and `depot projects update` require an organization API token supplied through `--token` or `DEPOT_TOKEN`. Stored user tokens from `depot login` and project OIDC credentials do not authorize those commands.
-
 ```bash
 depot login                           # Interactive browser login
 depot login --org-id 1234567890       # Specify org
@@ -142,11 +140,20 @@ kubectl create secret docker-registry regcred \
 
 Use `{orgId}.registry.depot.dev` for new repositories and custom image names. The legacy `registry.depot.dev/<project-id>:<build-id>` format remains available for existing saved-build usage.
 
-Prefer a registry access token with only the required repositories and permission. Organization owners create tokens in Registry Settings → Registry access tokens. Pull grants read access; Push includes pull access. Repository scopes use paths without a registry hostname or tag: `frontend` matches one repository, `team/*` matches one level, `team/**` matches nested repositories, and `**` matches the whole organization.
+Prefer a registry access token limited to the required repositories and permission. Organization owners create tokens in Registry Settings → Registry access tokens. Pull grants read access; Push includes pull access. Scope patterns exclude the registry hostname and image tag:
 
-CLI pull tokens expire after one hour and only cover the selected project's `<project-id>` path and `<project-id>/` descendants. Use a registry access token with Pull permission for custom or pull-through repository names. Project tokens also restrict registry access to project paths. User and organization tokens can provide broader organization access. A supported OIDC identity must match a project trust relationship in the organization; registry access from that identity covers the organization, unlike project-scoped build access. GitHub OIDC uses audience `https://depot.dev`.
+- `frontend`: one repository.
+- `team/*`: one level below `team`.
+- `team/**`: any depth below `team`.
+- `**`: all repositories in the organization.
+
+CLI pull tokens expire after one hour. Pull and project tokens cover only `<project-id>` and its descendant paths. For other custom or pull-through names, use a registry access token with Pull permission. User and organization tokens can grant broader organization access.
+
+OIDC registry access requires a matching project trust relationship in the organization. The resulting registry access covers the organization; build access remains project-scoped. GitHub OIDC uses audience `https://depot.dev`.
 
 ## Project Setup
+
+`depot projects get` and `depot projects update` require an organization API token through `--token` or `DEPOT_TOKEN`. Stored login tokens and project OIDC credentials do not authorize those commands.
 
 ```bash
 # Create depot.json in current directory (interactive project selection)
@@ -157,12 +164,11 @@ depot projects create "my-project"
 depot projects create --region eu-central-1 --cache-storage-policy 100 --cache-policy-keep-days 30 "my-project"
 depot projects create --organization 12345678910 "my-project"
 
-# Inspect a project; requires an organization API token in DEPOT_TOKEN or --token
-# Omit the ID to use DEPOT_PROJECT_ID or depot.json
+# Inspect a project; omit the ID to use DEPOT_PROJECT_ID or depot.json
 depot projects get
 depot projects get <project-id> --output json
 
-# Update selected project fields; requires the same organization API token
+# Update selected project fields
 depot projects update <project-id> --name "New name"
 depot projects update <project-id> --region eu-central-1 --cache-storage-policy 100 --output json
 

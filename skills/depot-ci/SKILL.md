@@ -107,7 +107,7 @@ Treat credentials as sensitive input and never echo them back in outputs.
 
 - For non-interactive flows, pipe secret values via stdin (for example `printf '%s' "$NPM_TOKEN" | depot ci secrets set SECRET_NAME --from-stdin`), not command-line literals.
 - Prefer interactive prompts over passing secret values as command arguments. Don't hardcode secrets or tokens in commands, scripts, workflow YAML, logs, or examples.
-- In external CI systems, store Depot credentials in the CI secret store and pass them at runtime. Inside Depot CI, `DEPOT_TOKEN` is reserved: trusted jobs receive an injected job token for Depot builds. Do not create a Depot CI secret named `DEPOT_TOKEN` or expect a custom value to replace the injected token.
+- In external CI systems, pass Depot credentials from the CI secret store at runtime. Depot CI reserves `DEPOT_TOKEN` and injects a job token for builds in trusted jobs. Do not create a Depot CI secret named `DEPOT_TOKEN`.
 - Avoid force/non-interactive destructive flags unless explicitly requested. Before running credential-affecting commands, confirm scope (org, repo, workflow) and intended target.
 
 ## Running Workflows
@@ -138,7 +138,7 @@ depot ci run --workflow .depot/workflows/ci.yml --repo owner/repo
 depot ci run --workflow .depot/workflows/ci.yml --forge depot
 ```
 
-The CLI detects GitHub, Origin, and Depot Code repositories from git remotes. Depot Code is selected automatically when all supported remotes use Depot Code. Mirrored checkouts default to GitHub or Origin; use `--forge depot` to select Depot Code. Use `--forge github` or `--forge origin` to disambiguate mixed forges. Use `--repo <name>` to override repository detection, and include `--forge origin` or `--forge depot` for those forges when no matching remote is available.
+The CLI detects GitHub, Origin, and Depot Code from git remotes. Depot Code is automatic only when all supported remotes use Depot Code; mirrored checkouts default to GitHub or Origin. Set `--forge` to `github`, `origin`, or `depot` to select a forge. Use `--repo <name>` to select a repository. When no matching remote exists, specify `--forge origin` or `--forge depot` for those forges.
 
 Local patches contain unpushed changes relative to the branch's remote state, or changes relative to the default branch for local-only branches. The CLI uploads the patch to Depot Cache and injects an application step after `actions/checkout`. Jobs that call reusable workflows have no steps for patch injection and run the merge-base code without local changes; the CLI warns about them.
 

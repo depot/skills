@@ -107,7 +107,7 @@ depot bake --print                            # Print resolved config without bu
 
 **Default file lookup order:** compose.yaml → compose.yml → docker-compose.yml → docker-compose.yaml → docker-bake.json → docker-bake.hcl → docker-bake.override.json → docker-bake.override.hcl
 
-Without target arguments, `depot bake` builds the `default` group. Saved targets receive `<build-id>-<target-name>` tags; `--save-tag v1` adds `v1-<target-name>`. Combine `--save --push` to save in Depot Registry and push the configured target tags to another registry. Set `project_id` inside an HCL target to select a Depot project per target.
+Without target arguments, `depot bake` builds the `default` group. Saved tags use `<build-id>-<target-name>`; `--save-tag v1` adds `v1-<target-name>`. Use `--save --push` to save in Depot Registry and push the configured target tags. Set `project_id` in an HCL target to select its Depot project.
 
 ### HCL Bake File Example
 
@@ -253,9 +253,9 @@ docker login {orgId}.registry.depot.dev -u x-token
 
 Image retention defaults to 7 days but is configurable per repository from the Registry Explorer, either by age (1, 7, 14, or 30 days) or by tag count (5, 10, 25, 50, or 100 tags).
 
-For custom image names, use registry access tokens created by an organization owner in Registry Settings → Registry access tokens. Select Pull or Push permission; Push includes pull access. Scope tokens to exact paths such as `frontend`, one-level patterns such as `team/*`, recursive patterns such as `team/**`, or `**` for all repositories. Do not include the registry hostname or image tag in a scope.
+For custom image names, use a registry access token. Organization owners create tokens in Registry Settings → Registry access tokens. Select Pull or Push permission; Push includes pull access. Scope tokens to exact paths (`frontend`), one level (`team/*`), any depth (`team/**`), or all repositories (`**`). Exclude registry hostnames and image tags from scopes.
 
-`depot pull` retrieves saved project builds and tags. Use `docker pull` for arbitrary custom or pull-through repositories. Tokens from `depot pull-token --project <id>` only cover `<project-id>` and `<project-id>/` paths, so use a registry access token with Pull permission for other names.
+Use `depot pull` for saved project builds and tags, and `docker pull` for custom or pull-through repositories. CLI pull tokens cover only `<project-id>` and its descendant paths. Use a registry access token with Pull permission for other names.
 
 **Pull-through cache:** Depot Registry can proxy an external registry and cache its layers on the CDN, so repeat pulls skip the upstream hop (faster CI pulls, global distribution, simpler auth for registries like Google Artifact Registry). Configure an upstream in Registry Settings; supported providers are Docker Hub, GitHub Container Registry, GitLab Container Registry, Quay.io, AWS ECR, Google Artifact Registry, Azure Container Registry, and custom registries. Pull-through must be set when the repository is created, it can't be added to an existing repository.
 

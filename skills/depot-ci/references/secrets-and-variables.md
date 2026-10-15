@@ -22,9 +22,9 @@ Variants are managed from the CLI (selectors on `add`, `set`, `bulk`, `get`, `li
 
 Selector flags are repeatable, and `--branch`/`--workflow` accept glob patterns. On `add`/`set`/`bulk` they scope where a variant applies; on `get`/`list`/`remove` they select or filter existing variants.
 
-For `add` and `set`, omit the variant name to update the variant with exactly the supplied selectors, or create a variant when none matches. The name `default` also requests automatic selection. A newly created repository variant receives a repository-derived name, with a numeric suffix when needed. Supply an explicit non-default name to address a particular named variant.
+For `add` and `set`, omit the variant name or use `default` to update the variant with exactly the supplied selectors. If none matches, Depot creates a variant. New repository variants use repository-derived names, with numeric suffixes to avoid collisions. Use a non-default name to select a named variant.
 
-Repository variants follow repository identity through GitHub renames and transfers. A different repository created under the old name does not inherit the original repository's secrets or variables. Repository selectors are resolved by the server, including previous names of renamed repositories.
+Repository variants follow GitHub repositories through renames and transfers. A new repository under an old name does not inherit the original repository's values. The server resolves repository selectors, including previous repository names.
 
 ## Access rule kinds
 
