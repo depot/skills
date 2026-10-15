@@ -66,6 +66,8 @@ For an agent or other non-interactive caller, `--yes` is required because workfl
 
 Creates a one-shot GitHub Actions workflow on a temporary branch that reads your existing GitHub secrets and variables and imports them into Depot CI. The command creates the commit without changing your worktree, then prints the `git push` command. Push the branch within five minutes before the migration intent expires. The branch is safe to delete afterward. You can also add secrets and variables manually with `depot ci secrets add` / `depot ci vars add` (see `secrets-and-variables.md`).
 
+`--yes` is accepted but has no effect on `secrets-and-vars`; the subcommand does not show a preview or confirmation prompt.
+
 | Flag               | Description                                                                        |
 | ------------------ | --------------------------------------------------------------------------------- |
 | `--branch-prefix <prefix>` | Prefix for the temporary migration branch; the intent ID is appended             |

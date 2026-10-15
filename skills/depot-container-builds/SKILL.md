@@ -101,11 +101,13 @@ Drop-in replacement for `docker buildx bake`. Builds multiple images in parallel
 depot bake                                    # Default file lookup
 depot bake -f docker-bake.hcl                 # Specific HCL file
 depot bake -f docker-compose.yml --load       # Build compose services + load locally
-depot bake --save --save-tag myrepo/app:v1    # Save to Depot Registry
+depot bake --save --save-tag v1               # Save as v1-<target-name> in Depot Registry
 depot bake --print                            # Print resolved config without building
 ```
 
 **Default file lookup order:** compose.yaml → compose.yml → docker-compose.yml → docker-compose.yaml → docker-bake.json → docker-bake.hcl → docker-bake.override.json → docker-bake.override.hcl
+
+Without target arguments, `depot bake` builds the `default` group. Saved tags use `<build-id>-<target-name>`; `--save-tag v1` adds `v1-<target-name>`. Use `--save --push` to save in Depot Registry and push the configured target tags. Set `project_id` in an HCL target to select its Depot project.
 
 ### HCL Bake File Example
 
@@ -224,12 +226,12 @@ depot build --save -t myapp .
 # Push any image to Depot Registry as a primary registry
 docker push {orgId}.registry.depot.dev/your/app:v1
 
-# Pull a saved image (by build ID or by tag)
+# Pull a saved project image (by build ID or by tag)
 depot pull --project <id> <build-id>
 depot pull --project <id> my-image:tag
 depot pull --project <id> --platform linux/arm64 <build-id>   # pull a specific platform
 
-# Generate a short-lived (1-hour) read-only token to pull from the Depot Registry
+# Generate a 1-hour read-only token for the project's registry paths
 depot pull-token --project <id>
 depot pull-token --project <id> <build-id>                    # scoped to a specific build
 
@@ -243,14 +245,21 @@ depot image list --project <id> --output json
 depot image rm --project <id> app:old app:staging
 
 # Docker auth for Depot Registry (each org has its own subdomain)
-docker login {orgId}.registry.depot.dev -u x-token -p <depot-token>
+docker login {orgId}.registry.depot.dev -u x-token
+# Enter a scoped registry access token at the password prompt.
 # Registry URL: {orgId}.registry.depot.dev/your/app:tag
 # (the legacy registry.depot.dev/<project-id>:<build-id> form still works for existing usage)
 ```
 
 Image retention defaults to 7 days but is configurable per repository from the Registry Explorer, either by age (1, 7, 14, or 30 days) or by tag count (5, 10, 25, 50, or 100 tags).
 
+For custom image names, use a registry access token. Organization owners create tokens in Registry Settings → Registry access tokens. Select Pull or Push permission; Push includes pull access. Scope tokens to exact paths (`frontend`), one level (`team/*`), any depth (`team/**`), or all repositories (`**`). Exclude registry hostnames and image tags from scopes.
+
+Use `depot pull` for saved project builds and tags, and `docker pull` for custom or pull-through repositories. CLI pull tokens cover only `<project-id>` and its descendant paths. Use a registry access token with Pull permission for other names.
+
 **Pull-through cache:** Depot Registry can proxy an external registry and cache its layers on the CDN, so repeat pulls skip the upstream hop (faster CI pulls, global distribution, simpler auth for registries like Google Artifact Registry). Configure an upstream in Registry Settings; supported providers are Docker Hub, GitHub Container Registry, GitLab Container Registry, Quay.io, AWS ECR, Google Artifact Registry, Azure Container Registry, and custom registries. Pull-through must be set when the repository is created, it can't be added to an existing repository.
+
+Cached mutable tags such as `latest` are not refreshed from upstream on every pull. Use a new immutable tag or digest to select updated content. Missing or reclaimed content still requires the upstream registry, so caching does not guarantee availability during an upstream outage.
 
 ## Special Output Formats
 

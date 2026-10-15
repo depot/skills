@@ -59,7 +59,8 @@ For every external download:
 |**User token**        |All projects in all user's orgs|`depot login` or Account Settings → API Tokens|Local development                    |
 |**Project token**     |Single project                 |Project Settings                              |CI environments                      |
 |**Organization token**|Single organization            |Org Settings → API Tokens                     |API access, automation               |
-|**Pull token**        |Depot Registry (read-only)     |`depot pull-token --project <id>` (expires after 1 hour)|Environments that only pull images (production deploys, CI pulling base images)|
+|**Pull token**        |Project registry paths (read-only)|`depot pull-token --project <id>` (expires after 1 hour)|Pulling saved project images|
+|**Registry access token**|Selected registry repositories, Pull or Push|Registry Settings → Registry access tokens|Registry automation, including custom repository names|
 |**OIDC trust**        |Single project (short-lived)   |Project Settings → Trust Relationships        |CI without static secrets (preferred)|
 
 ### Token Resolution Order
@@ -94,6 +95,8 @@ Configure in Project Settings → Trust Relationships. No static secrets, just s
 
 ### GitHub Actions OIDC Example
 
+After the first successful use, a GitHub trust relationship follows the repository through renames and transfers. A different repository created under the old name cannot use the original trust relationship.
+
 ```yaml
 jobs:
   build:
@@ -125,8 +128,8 @@ steps:
 ### Depot Registry Auth
 
 ```bash
-docker login {orgId}.registry.depot.dev -u x-token -p <any-depot-token>
-# Username is always "x-token". Password is any user, project, org, OIDC, or pull token.
+docker login {orgId}.registry.depot.dev -u x-token
+# Enter an appropriately scoped token at the password prompt.
 
 # Kubernetes secret
 kubectl create secret docker-registry regcred \
@@ -137,7 +140,20 @@ kubectl create secret docker-registry regcred \
 
 Use `{orgId}.registry.depot.dev` for new repositories and custom image names. The legacy `registry.depot.dev/<project-id>:<build-id>` format remains available for existing saved-build usage.
 
+Prefer a registry access token limited to the required repositories and permission. Organization owners create tokens in Registry Settings → Registry access tokens. Pull grants read access; Push includes pull access. Scope patterns exclude the registry hostname and image tag:
+
+- `frontend`: one repository.
+- `team/*`: one level below `team`.
+- `team/**`: any depth below `team`.
+- `**`: all repositories in the organization.
+
+CLI pull tokens expire after one hour. Pull and project tokens cover only `<project-id>` and its descendant paths. For other custom or pull-through names, use a registry access token with Pull permission. User and organization tokens can grant broader organization access.
+
+OIDC registry access requires a matching project trust relationship in the organization. The resulting registry access covers the organization; build access remains project-scoped. GitHub OIDC uses audience `https://depot.dev`.
+
 ## Project Setup
+
+`depot projects get` and `depot projects update` require an organization API token through `--token` or `DEPOT_TOKEN`. Stored login tokens and project OIDC credentials do not authorize those commands.
 
 ```bash
 # Create depot.json in current directory (interactive project selection)
@@ -264,6 +280,8 @@ depot configure-docker --uninstall  # Remove
 ## API Access
 
 Protocol: Connect framework (gRPC + HTTP JSON). SDKs: `@depot/sdk-node` (Node.js), `depot/depot-go` (Go).
+
+Core `ProjectService.listProjects`, `getProject`, and `updateProject` require an organization API token. `depot projects list` uses a different endpoint that also accepts user tokens.
 
 ```javascript
 import {depot} from '@depot/sdk-node'
