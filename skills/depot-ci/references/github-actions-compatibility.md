@@ -16,6 +16,8 @@ Depot CI runs GitHub Actions YAML on Depot's own orchestrator and compute, so mo
 
 `repository_dispatch` lets you trigger runs from outside GitHub via the GitHub API; the custom event type and `client_payload` are available through `github.event.action` and `github.event.client_payload`. GitHub delivers these events only against the default branch, so the default-branch workflow runs.
 
+For scheduled GitHub workflows, add `on.schedule` to `.depot/workflows/` and merge the workflow into the default branch. Depot evaluates cron expressions in UTC and runs the default branch independently of GitHub's scheduler. Per-entry `timezone` fields are ignored. Depot Code scheduled runs are not supported.
+
 Depot CI supports native GitHub stacked pull requests for `pull_request` workflows. Depot evaluates the `branches` filter against the stack's ultimate base branch, then runs the workflow for each pull request using its own merge ref. `github.event.pull_request.stack` provides `number`, `size`, `position`, `base.ref`, and `base.sha`; the value is `null` for an ordinary pull request.
 
 For `workflow_run`, the `on.workflow_run.workflows` filter accepts a YAML workflow name, Depot filename, or repository path. In `github.event.workflow_run`, `name` is the YAML name (or the repository path when unnamed), `path` is the repository-relative path such as `.depot/workflows/ci.yml`, and the Depot-only `basepath` is the filename such as `ci.yml`. `name` does not use `run-name`.
@@ -38,7 +40,9 @@ For private or internal sources, the caller must be a trusted private repository
 
 ### Permissions
 
-`actions`, `checks`, `code-quality`, `contents`, `id-token`, `issues`, `metadata`, `pull_requests`, `security-events`, `statuses`, `workflows`
+`actions`, `checks`, `code-quality`, `contents`, `id-token`, `issues`, `packages`, `pull-requests`, `security-events`, `statuses`
+
+Use the hyphenated `pull-requests` key. Unknown permission keys are ignored when configuring `GITHUB_TOKEN`; operations that need those permissions can still fail.
 
 For `issues: read` or `issues: write`, approve the corresponding Issues permission on the Depot Code Access installation. Without that grant, job tokens can omit `issues`, and issue operations fail.
 

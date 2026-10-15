@@ -107,7 +107,7 @@ Treat credentials as sensitive input and never echo them back in outputs.
 
 - For non-interactive flows, pipe secret values via stdin (for example `printf '%s' "$NPM_TOKEN" | depot ci secrets set SECRET_NAME --from-stdin`), not command-line literals.
 - Prefer interactive prompts over passing secret values as command arguments. Don't hardcode secrets or tokens in commands, scripts, workflow YAML, logs, or examples.
-- Use CI secret stores for `DEPOT_TOKEN` and other credentials; pass at runtime only.
+- In external CI systems, store Depot credentials in the CI secret store and pass them at runtime. Inside Depot CI, `DEPOT_TOKEN` is reserved: trusted jobs receive an injected job token for Depot builds. Do not create a Depot CI secret named `DEPOT_TOKEN` or expect a custom value to replace the injected token.
 - Avoid force/non-interactive destructive flags unless explicitly requested. Before running credential-affecting commands, confirm scope (org, repo, workflow) and intended target.
 
 ## Running Workflows
@@ -134,11 +134,11 @@ depot ci run --workflow .depot/workflows/ci.yml --job build --ssh-after-step 3
 # Override the auto-detected repository (multiple remotes or no origin)
 depot ci run --workflow .depot/workflows/ci.yml --repo owner/repo
 
-# Run a Depot Code repository (explicit forge selection required)
+# Select Depot Code explicitly for a mirrored repository
 depot ci run --workflow .depot/workflows/ci.yml --forge depot
 ```
 
-The CLI detects GitHub and Origin repositories from git remotes; use `--forge github` or `--forge origin` to disambiguate mixed forges. Depot Code remotes require `--forge depot`. Use `--repo <name>` to override repository detection, and include `--forge origin` or `--forge depot` for those forges when no matching remote is available.
+The CLI detects GitHub, Origin, and Depot Code repositories from git remotes. Depot Code is selected automatically when all supported remotes use Depot Code. Mirrored checkouts default to GitHub or Origin; use `--forge depot` to select Depot Code. Use `--forge github` or `--forge origin` to disambiguate mixed forges. Use `--repo <name>` to override repository detection, and include `--forge origin` or `--forge depot` for those forges when no matching remote is available.
 
 Local patches contain unpushed changes relative to the branch's remote state, or changes relative to the default branch for local-only branches. The CLI uploads the patch to Depot Cache and injects an application step after `actions/checkout`. Jobs that call reusable workflows have no steps for patch injection and run the merge-base code without local changes; the CLI warns about them.
 
@@ -381,7 +381,7 @@ Read the compatibility reference when you need to answer or act on any of the fo
 - Whether a specific workflow-, job-, or step-level field is supported, for example `concurrency`, `jobs.<id>.environment`, `jobs.<id>.snapshot`, `jobs.<id>.container`, `jobs.<id>.services`, `jobs.<id>.strategy.matrix`, `steps[*].shell`.
 - Whether a trigger event is accepted: the supported list (`push`, `pull_request`, `pull_request_target`, `pull_request_review`, `issue_comment`, `deployment_status`, `repository_dispatch`, `schedule`, `workflow_call`, `workflow_dispatch`, `workflow_run`, `merge_group`) and the GitHub-only events Depot CI rejects (for example, `release`, `issues`, `deployment`, `branch_protection_rule`).
 - Which expression contexts (`github`, `env`, `vars`, `secrets`, `needs`, `strategy`, `matrix`, `steps`, `job`, `runner`, `inputs`, `depot`) and functions (`always()`, `success()`, `failure()`, `cancelled()`, `case()`, `contains()`, `startsWith()`, `endsWith()`, `format()`, `join()`, `toJSON()`, `fromJSON()`, `hashFiles()`) are available.
-- Which `permissions` scopes work (`actions`, `checks`, `code-quality`, `contents`, `id-token`, `issues`, `metadata`, `pull_requests`, `security-events`, `statuses`, `workflows`). Request `code-quality` explicitly because `read-all` and `write-all` do not include it.
+- Which `permissions` scopes work (`actions`, `checks`, `code-quality`, `contents`, `id-token`, `issues`, `packages`, `pull-requests`, `security-events`, `statuses`). Request `code-quality` explicitly because `read-all` and `write-all` do not include it.
 - Which action types run (JavaScript Node 12/16/20/24, Composite, Docker).
 - Which `runs-on` Depot runner labels and sandbox sizes Depot CI supports (x86_64 and Arm only, no macOS nor Windows), and how unrecognized labels are treated.
 - Diagnosing why `depot ci migrate` auto-disabled a job, stripped a trigger from `on:`, or remapped a `runs-on` label.

@@ -105,3 +105,5 @@ Standard claims: `iss`, `sub`, `aud` (set by the workload request, for example `
 GitHub Actions-compatible claims: `repository`, `repository_owner`, `repository_id`, `repository_owner_id`, `repository_visibility`, `ref`, `ref_type`, `sha`, `actor`, `actor_id`, `event_name`, `head_ref`, `base_ref`, `workflow`, `workflow_ref`, `workflow_sha`, `run_id`, `run_number`, `run_attempt`.
 
 Depot-specific claims: `org_id` (Depot organization ID), `job_id` (Depot CI job ID).
+
+Use the exact organization ID from Depot settings for `org_id` and the `/org/<orgID>/` subject segment. Do not add an `org_` prefix.
