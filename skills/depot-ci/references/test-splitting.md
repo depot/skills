@@ -31,6 +31,8 @@ jobs:
 
 On Depot GitHub Actions runners, pass `index: ${{ strategy.job-index }}` and `total: ${{ strategy.job-total }}` explicitly. Set explicit values in multi-axis matrices when only one axis defines the intended shards.
 
+Depot CI's automatic values describe the flattened matrix. To split only a `shard` axis, set its `index` and `total`, plus a distinct `split-key` for each combination of the other axes. Keep the candidate list identical within each split; changing candidates for the same split causes a `candidate list changed for this test split` error.
+
 ## Candidate identity and timing granularity
 
 A candidate is one unit accepted by the test command. Use `filename` when candidates match the JUnit `file` field. Use `classname` when candidates match the JUnit `classname` field.
