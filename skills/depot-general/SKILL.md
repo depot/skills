@@ -179,7 +179,9 @@ depot projects delete --project-id <id>
 depot projects list
 ```
 
-New projects keep 50 GB of build cache per architecture and retain cache data for 14 days by default. Set `--cache-policy-keep-days 0` during creation for no retention limit. `depot projects update` changes only the supplied name, region, or cache storage policy fields.
+New projects keep 50 GB of build cache per architecture and retain cache data for 14 days by default. Set `--cache-policy-keep-days 0` during creation for no retention limit. `depot projects update` changes only supplied fields.
+
+Set `--max-concurrent-builds <positive-integer>` on `depot projects create` or `depot projects update` to enable autoscaling at that concurrent-build limit per builder instance. Use `depot projects update <project-id> --disable-autoscaling` to disable autoscaling. The update flags are mutually exclusive; omitting both preserves the current setting. New projects default to autoscaling disabled.
 
 ### depot.json
 
@@ -298,12 +300,14 @@ const build = await depot.build.v1.BuildService.createBuild(
 
 ## Pricing Plans
 
-|Plan     |Cost   |Docker Build Minutes|Depot CI Minutes|GHA Runner Minutes|Cache |
+|Plan     |Cost   |Docker Build Minutes|Shared Sandbox Minutes|GHA Runner Minutes|Cache and Registry Storage|
 |---------|-------|--------------------|----------------|------------------|------|
 |Developer|$20/mo |500/mo              |2,000/mo        |2,000/mo          |25 GB |
 |Startup  |$200/mo|5,000/mo            |20,000/mo       |20,000/mo         |250 GB|
 |Business |Custom |Custom              |Custom          |Custom            |Custom|
 
 Per-second billing, no minimums. Overage rates: Docker builds $0.04/minute, GitHub Actions runners $0.006/minute, Depot CI $0.00005/second/vCPU. Additional cache: $0.20/GB/month.
+
+Depot CI, Depot Sandboxes, and Depot Managed Agents share the sandbox allowance. Included minutes use a 2-vCPU baseline; a 4-vCPU sandbox consumes two included minutes per elapsed minute. Container build and GitHub Actions runner allowances remain separate.
 
 Developer and Startup plans include 1,000,000 passing test results each month. Additional passing results cost $1 per 1,000,000. Failed, errored, and skipped results are free.
