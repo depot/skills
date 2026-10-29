@@ -4,7 +4,7 @@ description: >
   Handles Depot CLI installation, authentication, login, project setup, organization management,
   and API access. Use when installing the Depot CLI, logging in with `depot login`, creating
   or managing Depot projects, configuring API tokens or OIDC trust relationships, setting up
-  depot.json, managing organizations, resetting build caches, or using the Depot API/SDKs.
+  depot.json, managing organizations, checking invoice credits, resetting build caches, or using the Depot API/SDKs.
   Also use when the user asks about Depot authentication methods, token types, environment
   variables, or general Depot platform setup that isn't specific to container builds, GitHub
   Actions runners, or Depot CI.
@@ -68,7 +68,13 @@ For every external download:
 1. `--token` flag (explicit on command)
 1. `DEPOT_TOKEN` environment variable
 1. Locally stored token (from `depot login`)
-1. OIDC token (if available)
+1. Managed-run token from the sandbox identity endpoint, when provided through `DEPOT_RUN_TOKEN_URL`
+1. OIDC token for project commands (if available)
+1. `DEPOT_JIT_TOKEN`, then `DEPOT_CACHE_TOKEN`
+
+The CLI refreshes identity-minted run tokens for API requests. Do not save a run token as a permanent credential. Commands that require an organization API token still need that token type.
+
+Cache tools prefer `DEPOT_JIT_TOKEN` or `DEPOT_CACHE_TOKEN` over an identity-minted run token, because those cache credentials remain usable throughout a build.
 
 ### Login
 
@@ -203,7 +209,12 @@ Three ways to specify a project (in priority order):
 depot org show              # Current org ID
 depot org list              # Orgs the user belongs to
 depot org switch <org-id>   # Set default org
+depot org credits          # Posted invoice credits, using an organization token
+depot org credits --output json
 ```
+
+`depot org credits` reads posted Stripe invoice credits. The balance does not deduct unbilled usage or include free-trial credits and plan allowances. Supply an organization token (read-only supported) through `--token`, `DEPOT_TOKEN`, or CLI configuration. The token selects the organization; `org switch` does not apply. The command never prompts for login. Poll hourly for monitoring; reads are limited to once per organization per minute and share an API-wide limit. Treat errors as unavailable data, not a zero balance.
+
 **Roles:** User (view projects, run builds) · Owner (create/delete projects, edit settings)
 
 Billing is per-organization. Configure usage caps, OIDC trust relationships, GitHub App connections, and cloud connections from org settings.
