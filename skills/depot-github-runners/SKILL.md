@@ -159,6 +159,8 @@ Setup:
 3. In Depot org settings, open Tailscale settings and connect using the OAuth client ID/secret.
 4. Add ACLs allowing `tag:depot-runner` to access target hosts/subnets.
 
+Optionally grant `Devices > Core` write scope so Depot can remove leftover offline nodes after machines stop abruptly. The scope permits listing and removing devices across the whole tailnet. Depot removes only offline, ephemeral nodes with the Depot tag and no running Depot machine. Without the scope, Tailscale removes ephemeral nodes later. To add the scope, create a new OAuth client with both scopes and reconnect Depot.
+
 ACL examples:
 
 ```json
@@ -213,6 +215,8 @@ Listings support repeatable `--repo`, `--status`, `--conclusion`, and `--runner-
 Listings and analytics return one page at a time. Use `--page-size` (1–250, default 50) and the returned `nextPageToken` with `--page-token`; keep filters and time ranges unchanged. Both default to the last 30 days. Supply `--start` and `--end` together as RFC 3339 timestamps for a positive range of at most 90 days.
 
 Per-job metrics include CPU and memory samples, statistics, and availability. JSON utilization is a fraction from 0 to 1; tables show percentages. Missing measurements remain absent, not zero. Execution windows are limited to seven days and 5,000 returned samples; statistics use all observed samples before downsampling. Aggregate analytics can lag completed jobs by 15 minutes. Step timings are unavailable.
+
+Job inspection and `depot jobs metrics` also report observed out-of-memory (OOM) kernel kills. No observed events does not rule out OOM; events can arrive after completion. At most 100 events are returned, with truncation indicated in JSON.
 
 ## SSH Debugging
 
