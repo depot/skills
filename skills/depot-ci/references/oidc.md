@@ -17,7 +17,7 @@ Depot CI automatically issues a signed JWT to each job. Set `permissions: id-tok
 - **Issuer (`iss`)**: `https://identity.depot.dev`
 - **JWKS endpoint**: `https://identity.depot.dev/keys`
 - **Expiry (`exp`)**: 5 minutes from issuance
-- **Subject (`sub`)**: `spiffe://identity.depot.dev/org/<orgID>/ci/github/<owner>/<repo>/ref/<ref>/sandbox/<sandboxID>`
+- **Subject (`sub`)**: a sandbox identity scoped to the repository forge and ref when available; see the formats below.
 
 ## Configure a cloud provider
 
@@ -69,11 +69,15 @@ The general steps are the same for any OIDC-compatible provider:
 
 ## The `sub` claim and wildcards
 
-Scope trust policies by matching the `sub` claim from left to right. Full form:
+Scope trust policies by matching the `sub` claim from left to right. Full form for GitHub:
 
 ```
 spiffe://identity.depot.dev/org/<orgID>/ci/github/<owner>/<repo>/ref/<ref>/sandbox/<sandboxID>
 ```
+
+Use `ci/origin` for Origin-hosted repositories and `ci/code` for standalone Depot Code repositories. Origin and Depot Code mirrors of GitHub repositories use `ci/github`. Entire uses `ci/entire/<namespace>/<owner>/<repo>`; see `entire.md` for its namespaces. The token's `forge` claim is `github`, `origin`, `code`, or `entire` and matches the subject's forge segment.
+
+Update older trust policies that match Origin-hosted or standalone Depot Code repositories with `ci/github` to use `ci/origin` or `ci/code`, respectively. If the repository name lacks the expected segments or the run has no ref, the subject falls back to `spiffe://identity.depot.dev/org/<orgID>/sandbox/<sandboxID>`.
 
 Match the stable segments you need, then wildcard the remainder. The trust domain, organization ID, repository owner and name, and full Git ref are stable for their respective resources. Depot creates a new sandbox ID for every job, so never pin the final `sandbox/<sandboxID>` segment.
 
@@ -104,6 +108,6 @@ Standard claims: `iss`, `sub`, `aud` (set by the workload request, for example `
 
 GitHub Actions-compatible claims: `repository`, `repository_owner`, `repository_id`, `repository_owner_id`, `repository_visibility`, `ref`, `ref_type`, `sha`, `actor`, `actor_id`, `event_name`, `head_ref`, `base_ref`, `workflow`, `workflow_ref`, `workflow_sha`, `run_id`, `run_number`, `run_attempt`.
 
-Depot-specific claims: `org_id` (Depot organization ID), `job_id` (Depot CI job ID).
+Depot-specific claims: `org_id` (Depot organization ID), `job_id` (Depot CI job ID), `forge` (repository forge).
 
 Use the exact organization ID from Depot settings for `org_id` and the `/org/<orgID>/` subject segment. Do not add an `org_` prefix.

@@ -218,6 +218,8 @@ Per-job metrics include CPU and memory samples, statistics, and availability. JS
 
 Job inspection and `depot jobs metrics` also report observed out-of-memory (OOM) kernel kills. No observed events does not rule out OOM; events can arrive after completion. At most 100 events are returned, with truncation indicated in JSON.
 
+For test-level rankings, use `depot tests analytics --gha --ranking flaky --repo owner/repo` or `--ranking slowest`. Flaky rankings find passing and failing executions at the same repository, ref, and commit; slowest ranks by p95 duration. Use inclusive UTC `--start-date` and `--end-date` values (`YYYY-MM-DD`) for up to 90 days; the default is seven days including today. `--limit` defaults to 20, with a maximum of 100. Use `--output json` and inspect returned failure owners with `depot tests <owner-id> --gha`.
+
 ## SSH Debugging
 
 ```yaml
