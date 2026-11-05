@@ -2,6 +2,8 @@
 
 Depot CI runs GitHub Actions YAML on Depot's own orchestrator and compute, so most workflows execute unmodified. The lists below enumerate exactly which GHA features Depot CI accepts, which it ignores, and which it rejects. They mirror `app/content/docs/ci/compatibility.mdx` in the Depot docs repo.
 
+These lists describe GitHub repositories. For Entire, read `entire.md`; for Origin, also check https://depot.dev/docs/ci/integrations/origin#origin-compatibility-findings.
+
 ## Supported
 
 ### Workflow level

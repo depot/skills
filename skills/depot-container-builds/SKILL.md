@@ -7,7 +7,7 @@ description: >
   failures, cancelling builds, configuring autoscaling, optimizing Dockerfile layer caching, using docker-bake.hcl or docker-compose builds,
   or migrating from `docker build` / `docker buildx build` to Depot. Also use when the user
   mentions depot build, depot bake, container builds, image builds, or asks about Depot's
-  build cache, build parallelism, build autoscaling, or ephemeral registry.
+  build cache, build parallelism, build autoscaling, or managing Depot Registry repositories, images, tokens, retention, and upstreams.
 ---
 
 # Depot Container Builds
@@ -240,7 +240,9 @@ The positive limit applies per builder instance. The two update flags are mutual
 
 ## Depot Registry
 
-An OCI-compliant registry that works both as a lightweight ephemeral store for build output and as a full primary registry for all your images (including ones not built with Depot). Each org gets its own subdomain `{orgId}.registry.depot.dev`, backed by a global CDN, and stores images and OCI artifacts (Helm charts, AI models) up to 50 GB. Browse repositories, tags, and attestations in the Registry Explorer in the dashboard.
+Use `depot registry` to manage organization repositories, images, access tokens, retention, and upstreams. Commands require an organization API token and return JSON. Read `references/registry-management.md` for commands, pagination, and deletion behavior.
+
+Depot Registry is an OCI-compliant registry that works both as a lightweight ephemeral store for build output and as a full primary registry for all your images (including ones not built with Depot). Each org gets its own subdomain `{orgId}.registry.depot.dev`, backed by a global CDN, and stores images and OCI artifacts (Helm charts, AI models) up to 50 GB. Browse repositories, tags, and attestations in the Registry Explorer in the dashboard.
 
 ```bash
 # Save a Depot build's output to the registry (project-scoped, no tagging step)

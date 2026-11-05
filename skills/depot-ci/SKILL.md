@@ -314,7 +314,7 @@ steps:
 
 Completed GitHub checks include errors, annotations, step summaries from `$GITHUB_STEP_SUMMARY`, and artifact links to the Depot job. Use workflow commands such as `::error file=src/example.ts,line=10::Expected a value` for inline annotations. Checks truncate large output; open the Depot job for full summaries and artifacts.
 
-If GitHub API limits delay check updates, organization owners can connect **Depot Checks** and **Depot Checks 2** under Settings → Connections → GitHub Checks. Depot Code Access must already be connected. Give the checks apps access to the same repositories. If an approved connection remains pending, use **Finish connecting**.
+If GitHub API limits delay check updates, organization owners can connect **Depot Checks**, **Depot Checks 2**, and **Depot Checks 3** under Settings → Connections → GitHub Checks. Depot Code Access must already be connected. Give the checks apps access to the same repositories. If an approved connection remains pending, use **Finish connecting**.
 
 Before adding checks apps, set required Depot check sources to **Any source**, because multiple apps can publish the same name. **Any source** also permits other repository writers to satisfy that name. Keep a pinned source and skip additional apps when app-specific trust is required. Existing checks stay with their original app and can still encounter its rate limit.
 
@@ -383,6 +383,8 @@ Read `references/runs-and-debugging.md` when you need a complete flag table, JSO
 Use `depot tests` to inspect parsed JUnit results. Use `depot tests split`, `depot tests run`, or `depot tests report` to balance tests with historical timings and upload new reports. These three subcommands run only inside Depot CI or Depot GitHub Actions runner jobs.
 
 For candidate identity rules, matrix behavior, reporting requirements, and command examples, read `references/test-splitting.md`.
+
+Use `depot tests analytics --ranking flaky --repo owner/repo` to find tests with passing and failing executions at the same repository, ref, and commit. Use `--ranking slowest` for p95 duration rankings. Add `--ci` or `--gha` to restrict the source, and `--output json` for structured output. Dates use inclusive UTC `--start-date` and `--end-date` values (`YYYY-MM-DD`); the default is seven days including today, with a 90-day maximum. `--limit` defaults to 20 and accepts up to 100. Inspect a returned failure owner with `depot tests <owner-id>`.
 
 ## Compatibility with GitHub Actions
 

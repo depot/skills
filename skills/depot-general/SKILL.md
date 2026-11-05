@@ -4,7 +4,7 @@ description: >
   Handles Depot CLI installation, authentication, login, project setup, organization management,
   and API access. Use when installing the Depot CLI, logging in with `depot login`, creating
   or managing Depot projects, configuring API tokens or OIDC trust relationships, setting up
-  depot.json, managing organizations, checking invoice credits, resetting build caches, or using the Depot API/SDKs.
+  depot.json, managing organizations, reading invoices or invoice credits, resetting build caches, or using the Depot API/SDKs.
   Also use when the user asks about Depot authentication methods, token types, environment
   variables, or general Depot platform setup that isn't specific to container builds, GitHub
   Actions runners, or Depot CI.
@@ -90,6 +90,8 @@ depot logout                          # Remove saved token
 ### OIDC Trust Relationships (Preferred for CI)
 
 Configure in Project Settings → Trust Relationships. No static secrets, just short-lived credentials.
+
+Use `depot projects trust-policy` to list, add, update, or remove GitHub, GitLab, CircleCI, and Buildkite policies with an organization API token. Read `references/trust-policies.md` for provider flags, pagination, and restrictions.
 
 |CI Provider       |Configuration                                                                                   |
 |------------------|------------------------------------------------------------------------------------------------|
@@ -216,6 +218,10 @@ depot org credits --output json
 `depot org credits` reads posted Stripe invoice credits. The balance does not deduct unbilled usage or include free-trial credits and plan allowances. Supply an organization token (read-only supported) through `--token`, `DEPOT_TOKEN`, or CLI configuration. The token selects the organization; `org switch` does not apply. The command never prompts for login. Poll hourly for monitoring; reads are limited to once per organization per minute and share an API-wide limit. Treat errors as unavailable data, not a zero balance.
 
 **Roles:** User (view projects, run builds) · Owner (create/delete projects, edit settings)
+
+Read finalized invoices with `depot org invoices list`, `depot org invoices get <invoice-id>`, and `depot org invoices line-items <invoice-id>`. Supply an organization API token with the Owner role, or an owner's user token with `--org <org-id>`, through `--token`, `DEPOT_TOKEN`, or CLI configuration. `org switch` does not select the organization and these commands do not prompt for login. Output is JSON; amounts are integer strings in currency minor units. Hosted and PDF invoice links are confidential.
+
+Both invoice listings accept `--page-size` (1–100, default 50) and `--page-token`. Continue with `nextPageToken` until absent, even after an empty page. Results include finalized invoices from previous or canceled subscriptions and standalone invoices.
 
 Billing is per-organization. Configure usage caps, OIDC trust relationships, GitHub App connections, and cloud connections from org settings.
 
