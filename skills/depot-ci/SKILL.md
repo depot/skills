@@ -1,15 +1,13 @@
 ---
 name: depot-ci
 description: >
-  Configures and manages Depot CI, a drop-in replacement for GitHub Actions that runs workflows
-  entirely within Depot. Use when migrating GitHub Actions workflows to Depot CI, running
-  `depot ci migrate`, managing Depot CI secrets and variables, running workflows with
-  `depot ci run`, debugging Depot CI runs with `depot ci run list`, `depot ci status`,
-  `depot ci logs`, `depot ci diagnose`, or `depot ci ssh`, inspecting test results with
-  `depot tests` or run artifacts with `depot ci artifacts`, checking workflow compatibility,
-  running Depot CI on Entire repositories, or understanding Depot CI capabilities. Also use when the user mentions .depot/ directory,
-  depot ci commands, or asks about running GitHub Actions workflows on Depot's infrastructure
-  without GitHub-hosted runners.
+  Use for Depot CI, which runs GitHub Actions workflow files on Depot. Use when the user wants to
+  find, read, start, cancel, retry, or debug Depot CI runs, workflows, jobs, logs, test results,
+  artifacts, or metrics; migrate workflows with `depot ci migrate`; manage Depot CI secrets and
+  variables; check whether a workflow feature is supported; run Depot CI on Entire repositories; or
+  edit files in the `.depot/` directory. Covers the `depot ci` and `depot tests` commands and the
+  Depot MCP tools, such as `list_ci_runs`, `get_ci_failure_diagnosis`, `get_ci_job_attempt_logs`, and
+  `retry_failed_ci_jobs`.
 ---
 
 # Depot CI
@@ -17,6 +15,43 @@ description: >
 Depot CI is a programmable CI system for engineers and agents. Workflows in Depot CI run entirely on Depot compute with built-in job visibility, debuggability, and control. GitHub Actions is the first syntax Depot CI supports: migrate your existing GitHub Actions workflows, and get fast, reliable runs on optimized infrastructure.
 
 This SKILL.md covers the core workflow plus the most common commands. Detailed flag tables, JSON output shapes, and less-common commands live in focused files under `references/`, pointed to from the relevant sections below. Load a reference file only when you need the detail it contains.
+
+## Depot MCP Tools
+
+Use the Depot MCP tools when they are available. Where there is no shell, as in ChatGPT, the tools are the only way to act on Depot. Where both the tools and the `depot` CLI are available, use the tools to inspect and control runs. Use the CLI for tasks that need the local checkout, such as `depot ci migrate`, `depot ci run` with uncommitted changes, and `depot ci ssh`.
+
+The tools act on the organization that the user selected when they connected Depot. If expected runs or workflows are missing, ask the user to confirm which organization they connected.
+
+| Task | Tool |
+| ---- | ---- |
+| Find runs; filter by status, repository, commit SHA, trigger, or pull request | `list_ci_runs` |
+| Find workflow executions | `list_ci_workflows` |
+| Read a run's repository, trigger, and timestamps | `get_ci_run` |
+| Read a run's workflow, job, and attempt status | `get_ci_run_status` |
+| Read one workflow, job, or attempt | `get_ci_workflow`, `get_ci_job`, `get_ci_job_attempt` |
+| Read job logs, by `attemptId` or by `jobId` for the latest attempt | `get_ci_job_attempt_logs` |
+| Group a failure and get a suggested fix | `get_ci_failure_diagnosis` |
+| Read a job's step summary | `get_ci_job_summary` |
+| Read CPU and memory use | `get_ci_run_metrics`, `get_ci_job_metrics`, `get_ci_job_attempt_metrics` |
+| List artifacts and get a download link that expires after 5 minutes | `list_ci_artifacts`, `get_ci_artifact_download_url` |
+| Read parsed test results | `list_test_results` |
+| Rank flaky or slow tests | `list_test_analytics` |
+| Start a run from a repository, commit, workflow, or job | `start_ci_run` |
+| Dispatch a `workflow_dispatch` workflow with inputs | `dispatch_ci_workflow` |
+| Cancel a run, workflow, or job | `cancel_ci_run`, `cancel_ci_workflow`, `cancel_ci_job` |
+| Retry one job, retry failed jobs and their dependents, or rerun a workflow | `retry_ci_job`, `retry_failed_ci_jobs`, `rerun_ci_workflow` |
+| Answer a running input job | `submit_ci_job_input` |
+| Read or change secret names, variants, and selectors | `list_secrets`, `get_secret`, `get_secret_variant`, `list_secret_attributes`, `update_secret_variant_metadata` |
+| Delete a secret or one variant | `delete_secret`, `delete_secret_variant` |
+| Search the Depot documentation | `search_docs` |
+
+To investigate a failed run, call `list_ci_runs` with a failed status, then `get_ci_failure_diagnosis` for the run. Read `get_ci_job_attempt_logs` for the jobs it names. After a fix, call `retry_failed_ci_jobs` on the workflow.
+
+`start_ci_run` runs committed code. To test workflow YAML that is not committed, pass the complete file contents in `workflowContent` instead of `workflow`.
+
+The tools never return or accept secret values, and there are no tools for CI variables. Do not ask the user to paste a secret value or a Depot token into the conversation. To add a secret or a variable, or to change a value, the user runs `depot ci secrets add` or `depot ci vars add` in their own terminal, or uses the Depot dashboard.
+
+Before calling a tool that starts, cancels, retries, or deletes something, state what it will change. Call it only when the user asked for that change or confirms it.
 
 ## Architecture
 

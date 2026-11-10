@@ -1,18 +1,43 @@
 ---
 name: depot-container-builds
 description: >
-  Configures and runs Depot remote container builds using `depot build` and `depot bake`.
-  Use when building Docker images, creating Dockerfiles with Depot, pushing images to registries,
-  building multi-platform/multi-arch images (linux/amd64, linux/arm64), debugging container build
-  failures, cancelling builds, configuring autoscaling, optimizing Dockerfile layer caching, using docker-bake.hcl or docker-compose builds,
-  or migrating from `docker build` / `docker buildx build` to Depot. Also use when the user
-  mentions depot build, depot bake, container builds, image builds, or asks about Depot's
-  build cache, build parallelism, build autoscaling, or managing Depot Registry repositories, images, tokens, retention, and upstreams.
+  Use for Depot container builds. Use when the user wants to build Docker images with `depot build` or
+  `depot bake`, build images for several platforms such as linux/amd64 and linux/arm64, push or load
+  images, use Docker Compose or bake files, set up build caching, or move `docker build` or `docker
+  buildx` commands to Depot. Also use to find, read, cancel, or debug builds and their step logs, to
+  change project build settings such as builder size and autoscaling, and to manage Depot Registry
+  repositories, images, tokens, retention, and upstreams. Covers the `depot` CLI and the Depot MCP
+  tools, such as `list_builds`, `get_build_steps`, and `get_build_step_logs`.
 ---
 
 # Depot Container Builds
 
 Depot runs Docker image builds on remote high-performance builders (16 CPU, 32 GB RAM, NVMe SSD cache). `depot build` is a drop-in replacement for `docker build` / `docker buildx build`. `depot bake` replaces `docker buildx bake`.
+
+## Depot MCP Tools
+
+Use the Depot MCP tools when they are available. Where there is no shell, as in ChatGPT, the tools are the only way to act on Depot. The tools cannot start a build, because a build needs a local build context. To start a build, give the user the `depot build` or `depot bake` command to run, or run it yourself where a shell with the `depot` CLI is available.
+
+The tools act on the organization that the user selected when they connected Depot.
+
+| Task | Tool |
+| ---- | ---- |
+| Find a project ID | `list_projects`, `get_project` |
+| List builds, newest first | `list_builds` |
+| Read one build's status and metadata | `get_build` |
+| List a build's steps, with cache state and errors | `get_build_steps` |
+| Read one step's logs, by the step `digest` | `get_build_step_logs` |
+| Cancel a running build | `cancel_build` |
+| Create a link to a build for people outside the organization | `share_build` |
+| List or delete tagged images in a project's Depot Registry | `list_images`, `delete_image` |
+| Change a project's name, region, cache policy, builder size, build timeout, or autoscaling limit | `update_project` |
+| Delete a project's cache and stop its builders | `reset_project` |
+| Read CPU and memory use of completed builds | `get_project_build_metrics`, `list_build_metrics` |
+| Search the Depot documentation | `search_docs` |
+
+To investigate a failed build, call `list_builds` with the project ID, then `get_build_steps` for the failed build. Call `get_build_step_logs` with the `digest` of the step that has an error.
+
+Before calling `cancel_build`, `delete_image`, `update_project`, or `reset_project`, state what will change. Call it only when the user asked for that change or confirms it. `reset_project` deletes all cached data for the project, so the next builds run without cache.
 
 ## Project Selection for Multi-Org Users
 
