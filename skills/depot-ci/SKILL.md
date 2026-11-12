@@ -51,7 +51,7 @@ To investigate a failed run, call `list_ci_runs` with a failed status, then `get
 
 The tools never return or accept secret values, and there are no tools for CI variables. Do not ask the user to paste a secret value or a Depot token into the conversation. To add a secret or a variable, or to change a value, the user runs `depot ci secrets add` or `depot ci vars add` in their own terminal, or uses the Depot dashboard.
 
-Before calling a tool that starts, cancels, retries, or deletes something, state what it will change. Call it only when the user asked for that change or confirms it.
+Before calling a tool that starts, cancels, retries, changes, or deletes something, or `submit_ci_job_input`, state what it will change. Call it only when the user asked for that change or confirms it. An input job can be an approval step for a deployment, so submit only the values that the user chose.
 
 ## Architecture
 

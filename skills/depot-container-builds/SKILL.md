@@ -37,7 +37,7 @@ The tools act on the organization that the user selected when they connected Dep
 
 To investigate a failed build, call `list_builds` with the project ID, then `get_build_steps` for the failed build. Call `get_build_step_logs` with the `digest` of the step that has an error.
 
-Before calling `cancel_build`, `delete_image`, `update_project`, or `reset_project`, state what will change. Call it only when the user asked for that change or confirms it. `reset_project` deletes all cached data for the project, so the next builds run without cache.
+Before calling `cancel_build`, `share_build`, `delete_image`, `update_project`, or `reset_project`, state what will change. Call it only when the user asked for that change or confirms it. `reset_project` deletes all cached data for the project, so the next builds run without cache. A `share_build` link lets anyone who has it read the build details and logs without signing in, until sharing is stopped.
 
 ## Project Selection for Multi-Org Users
 

@@ -7,8 +7,8 @@ interface:
   default_prompt: "Use $depot-general to list my Depot projects and their settings."
 policy:
   products:
-    - "chatgpt"
-    - "codex"
+    - "CHAT"
+    - "CODEX"
   allow_implicit_invocation: true
 dependencies:
   tools:
