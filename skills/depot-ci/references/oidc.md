@@ -110,4 +110,15 @@ GitHub Actions-compatible claims: `repository`, `repository_owner`, `repository_
 
 Depot-specific claims: `org_id` (Depot organization ID), `job_id` (Depot CI job ID), `forge` (repository forge).
 
+The ID claims depend on the repository forge:
+
+| `forge` | `repository_id` | `repository_owner_id` |
+|---|---|---|
+| `github` | GitHub repository ID | GitHub user or organization ID |
+| `origin` | Cursor Origin repository ID | Cursor Origin owner ID |
+| `entire` | Entire repository ID | Entire project ID |
+| `code` | Depot Code repository ID | Depot organization ID (`org_id`) |
+
+IDs can overlap across forges. Match `forge` alongside either ID in trust policies. Depot Code mirrors of GitHub repositories use `forge: github` and GitHub IDs.
+
 Use the exact organization ID from Depot settings for `org_id` and the `/org/<orgID>/` subject segment. Do not add an `org_` prefix.

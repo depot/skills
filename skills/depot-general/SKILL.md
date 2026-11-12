@@ -214,7 +214,7 @@ depot projects delete --project-id <id>
 depot projects list
 ```
 
-New projects keep 50 GB of build cache per architecture and retain cache data for 14 days by default. Set `--cache-policy-keep-days 0` during creation for no retention limit. `depot projects update` changes only supplied fields.
+New projects keep 50 GB of build cache per architecture and retain cache data for 14 days by default. For Depot-hosted projects, set `--cache-storage-policy` to 25–1000 GB. Set `--cache-policy-keep-days` to 1–30 days; `0` during creation uses the 14-day default. `depot projects update` changes only supplied fields.
 
 Set `--max-concurrent-builds <positive-integer>` on `depot projects create` or `depot projects update` to enable autoscaling at that concurrent-build limit per builder instance. Use `depot projects update <project-id> --disable-autoscaling` to disable autoscaling. The update flags are mutually exclusive; omitting both preserves the current setting. New projects default to autoscaling disabled.
 
