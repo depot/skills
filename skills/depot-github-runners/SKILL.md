@@ -1,13 +1,13 @@
 ---
 name: depot-github-runners
 description: >
-  Configures Depot-managed GitHub Actions runners as a drop-in replacement for GitHub-hosted
-  runners. Use when setting up or migrating GitHub Actions workflows to use Depot runners,
-  choosing runner sizes (CPU/RAM), configuring runs-on labels, setting up ARM or Windows or
-  macOS runners, troubleshooting GitHub Actions runner issues, configuring egress filtering,
-  using Depot Cache with GitHub Actions, or running Dagger/Dependabot on Depot runners.
-  Also use when the user mentions depot-ubuntu, depot-windows, depot-macos runner labels,
-  or asks about faster/cheaper GitHub Actions runners, `depot jobs`, job analytics, or CPU and memory metrics.
+  Use for GitHub Actions jobs that run on Depot runners. Use when the user wants to set up Depot
+  runners, choose a runner label and size, use Ubuntu, Arm, Windows, or macOS runners, or set up Depot
+  Cache, egress rules, Tailscale, Dagger, or Dependabot. Also use to find, read, and debug these jobs,
+  their logs, test results, CPU and memory use, and job analytics, and when the user mentions
+  `depot-ubuntu`, `depot-windows`, or `depot-macos` labels or `depot jobs`. Covers the `depot` CLI and
+  the Depot MCP tools, such as `list_github_actions_jobs`, `search_github_actions_logs`, and
+  `get_github_actions_job_metrics`.
 ---
 
 # Depot GitHub Actions Runners
@@ -15,6 +15,35 @@ description: >
 Depot provides managed, ephemeral, single-tenant GitHub Actions runners. Drop-in replacement for GitHub-hosted runners — change the `runs-on` label and everything else stays the same.
 
 **Requirement:** Repository must be owned by a GitHub organization (not a personal account).
+
+## Depot MCP Tools
+
+Use the Depot MCP tools when they are available. Where there is no shell, as in ChatGPT, the tools are the only way to act on Depot. Where the `depot` CLI is also available, the tools and the `depot jobs` commands read the same data. Workflow files are still edited in the repository.
+
+The tools act on the organization that the user selected when they connected Depot. They cover GitHub Actions jobs that run on Depot runners. For Depot CI jobs, use the Depot CI tools, such as `list_ci_runs`.
+
+| Task | Tool |
+| ---- | ---- |
+| List jobs; filter by repository, status, conclusion, runner label, or time | `list_github_actions_jobs` |
+| Read one job and its observed out-of-memory kills | `get_github_actions_job` |
+| Read one job's CPU and memory samples | `get_github_actions_job_metrics` |
+| Search job log lines | `search_github_actions_logs` |
+| Read the log lines around one search result | `get_github_actions_log_context` |
+| Count matching log lines, or list log filter values | `count_github_actions_logs`, `list_github_actions_log_facets` |
+| Read a job's test result summary | `get_github_actions_test_results_summary` |
+| Rank flaky or slow tests | `list_test_analytics` |
+| Compare jobs by duration, failure rate, CPU, and memory | `list_github_actions_job_analytics`, `list_github_actions_analytics_job_trends`, `get_github_actions_analytics_overview` |
+| Get runner size recommendations | `list_github_actions_recommendations` |
+| Read runner usage | `list_github_actions_usage_by_repository`, `list_github_actions_usage_by_job`, `list_github_actions_usage_by_runner`, `get_github_actions_usage_projection` |
+| Stop the runner of a queued or running job | `terminate_github_actions_job` |
+| List GitHub App connections and their repositories | `list_github_actions_connections`, `list_github_actions_repositories` |
+| Get a link to install the Depot GitHub App | `create_github_actions_installation_url` |
+| Disconnect a GitHub App installation | `delete_github_actions_connection` |
+| Search the Depot documentation | `search_docs` |
+
+To investigate a failed job, call `list_github_actions_jobs` with a failure conclusion, then `get_github_actions_job`. Call `search_github_actions_logs` with an error message or a step name, and `get_github_actions_log_context` for the lines around a match. If the job ended without a clear error, check `get_github_actions_job_metrics` for memory pressure.
+
+Before calling `terminate_github_actions_job` or `delete_github_actions_connection`, state what will change. Call it only when the user asked for that change or confirms it.
 
 ## Setup
 

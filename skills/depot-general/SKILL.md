@@ -1,18 +1,45 @@
 ---
 name: depot-general
 description: >
-  Handles Depot CLI installation, authentication, login, project setup, organization management,
-  and API access. Use when installing the Depot CLI, logging in with `depot login`, creating
-  or managing Depot projects, configuring API tokens or OIDC trust relationships, setting up
-  depot.json, managing organizations, reading invoices or invoice credits, resetting build caches, or using the Depot API/SDKs.
-  Also use when the user asks about Depot authentication methods, token types, environment
-  variables, or general Depot platform setup that isn't specific to container builds, GitHub
-  Actions runners, or Depot CI.
+  Use for Depot setup and account tasks that are not specific to one Depot product. Use when the user
+  wants to install the Depot CLI, sign in with `depot login`, choose an organization, create or change
+  Depot projects, set up `depot.json`, manage API tokens or OIDC trust policies, read invoices, usage,
+  or credits, redeem a credit code, reset a build cache, search the Depot documentation, or use the
+  Depot API and SDKs. Covers the `depot` CLI and the Depot MCP tools, such as `list_projects`,
+  `list_trust_policies`, `list_invoices`, `get_current_period_usage`, and `search_docs`. For container
+  builds, GitHub Actions runners, or Depot CI, use the matching Depot skill.
 ---
 
 # Depot General: CLI, Auth, and Project Setup
 
 Depot is a build acceleration platform. This skill covers CLI installation, authentication, project configuration, and organization management. For product-specific guidance, see the depot-container-builds, depot-github-runners, or depot-ci skills.
+
+## Depot MCP Tools
+
+Use the Depot MCP tools when they are available. Where there is no shell, as in ChatGPT, the tools are the only way to act on Depot. Where both the tools and the `depot` CLI are available, either works. Use the CLI for tasks that change local files or local credentials, such as `depot init`, `depot login`, and `depot configure-docker`.
+
+The user signs in to Depot when they connect the tools. The tools act on the organization that the user selected at that time. If expected projects are missing, ask the user to confirm which organization they connected.
+
+The tools never return or accept secret values. No tool creates an API token, because a new token is a secret value. Do not ask the user to paste a token or secret into the conversation. To create a token, the user uses the Depot dashboard or `depot login` in their own terminal.
+
+| Task | Tool |
+| ---- | ---- |
+| List, read, create, update, or delete projects | `list_projects`, `get_project`, `create_project`, `update_project`, `delete_project` |
+| Delete a project's build cache | `reset_project` |
+| List, rename, or delete a project's API tokens | `list_tokens`, `update_token`, `delete_token` |
+| Manage a project's OIDC trust policies | `list_trust_policies`, `add_trust_policy`, `update_trust_policy`, `remove_trust_policy` |
+| Read finalized invoices and their line items | `list_invoices`, `get_invoice`, `list_invoice_line_items` |
+| Redeem a promotional credit code | `redeem_credit` |
+| Read usage for the current period | `get_current_period_usage` |
+| Read usage over time or by product | `get_usage`, `get_organization_usage_series`, `get_usage_report` |
+| Read usage by project | `list_project_usage`, `get_project_usage`, `get_project_usage_series`, `list_container_build_usage_by_project` |
+| Read usage of Depot CI, test results, or sandboxes | `list_depot_ci_usage_by_repository`, `list_depot_ci_usage_by_workflow`, `list_test_results_usage_by_repository`, `get_agent_sandbox_usage` |
+| Search the Depot documentation | `search_docs` |
+| Report a bug, a wrong result, or a missing tool to Depot | `submit_feedback` |
+
+Use `search_docs` to answer questions about how Depot works before you rely on memory. Use `submit_feedback` when a tool fails, returns a wrong result, or cannot do what the user needs. Do not include credentials or private data in feedback.
+
+Before calling a tool that creates, changes, or deletes a project, token, or trust policy, state what will change. Call it only when the user asked for that change or confirms it. `delete_project` and `reset_project` delete cached data and cannot be undone.
 
 ## CLI Installation
 

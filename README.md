@@ -32,6 +32,10 @@ cp skills/depot-general/SKILL.md .cursor/rules/depot-general.mdc
 
 After manual install, open Cursor Settings -> Rules and verify these files are enabled for the workspace.
 
+### ChatGPT and Codex
+
+Each skill declares the Depot MCP server at `https://mcp.depot.dev/mcp` as a dependency in `agents/openai.yaml`. Where the MCP tools are available, the skills tell the agent which tools to use. Where a shell is available, the skills also give the `depot` CLI commands.
+
 ## Available skills
 
 | Skill | Directory | Description |
