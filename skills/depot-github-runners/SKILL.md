@@ -3,7 +3,7 @@ name: depot-github-runners
 description: >
   Use for GitHub Actions jobs that run on Depot runners. Use when the user wants to set up Depot
   runners, choose a runner label and size, use Ubuntu, Arm, Windows, or macOS runners, or set up Depot
-  Cache, egress rules, Tailscale, Dagger, or Dependabot. Also use to find, read, and debug these jobs,
+  Cache, egress rules, Tailscale, or Dependabot. Also use to find, read, and debug these jobs,
   their logs, test results, CPU and memory use, and job analytics, and when the user mentions
   `depot-ubuntu`, `depot-windows`, or `depot-macos` labels or `depot jobs`. Covers the `depot` CLI and
   the Depot MCP tools, such as `list_github_actions_jobs`, `search_github_actions_logs`, and
@@ -158,16 +158,6 @@ Cache behavior: repository-scoped, no branch isolation, encrypted, up to 1000 Mi
 To disable auto-cache: org settings → turn off "Allow Actions jobs to automatically connect to Depot Cache."
 
 For Xcode, the runner sets `XCODE_XCCONFIG_FILE` only when the job does not supply its own configuration file. Set `DEPOT_XCODE_CACHE_ENABLED: '0'` to opt out for a job or workflow. Add `depot/xcode-compilation-cache-summary@v1` after the build to report cache statistics. Xcode compilation caching is not supported on local workstations. See https://depot.dev/docs/cache/integrations/xcode for build settings and troubleshooting.
-
-## Dagger Integration
-
-**Deprecated:** Dagger Engine support on Depot GitHub Actions Runners is being deprecated and will be removed in a future update. Don't recommend this integration for new workflows.
-
-```yaml
-runs-on: depot-ubuntu-latest,dagger=0.18.4
-```
-
-Launches a dedicated Dagger Engine VM with persistent NVMe cache. Dagger CLI pre-installed. Additional $0.04/min.
 
 ## Egress Filtering (Linux Only)
 

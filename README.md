@@ -41,7 +41,7 @@ Each skill declares the Depot MCP server at `https://mcp.depot.dev/mcp` as a dep
 | Skill | Directory | Description |
 |-------|-----------|-------------|
 | **Container Builds** | [`skills/depot-container-builds/`](skills/depot-container-builds/SKILL.md) | `depot build`, `depot bake`, multi-platform builds, caching, Depot Registry, migration from Docker |
-| **GitHub Actions Runners** | [`skills/depot-github-runners/`](skills/depot-github-runners/SKILL.md) | Managed GHA runners, runner labels/sizes, caching, Dagger, Dependabot, egress filtering |
+| **GitHub Actions Runners** | [`skills/depot-github-runners/`](skills/depot-github-runners/SKILL.md) | Managed GHA runners, runner labels/sizes, caching, Dependabot, egress filtering |
 | **Depot CI** | [`skills/depot-ci/`](skills/depot-ci/SKILL.md) | Depot CI beta, `depot ci migrate`, secrets/vars, running workflows, GHA compatibility |
 | **General** | [`skills/depot-general/`](skills/depot-general/SKILL.md) | CLI installation, authentication (tokens, OIDC), project setup, org management, API, pricing |
 
