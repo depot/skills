@@ -12,9 +12,13 @@ These lists describe GitHub repositories. For Entire, read `entire.md`; for Orig
 
 ### Triggers
 
-`push` (branches, tags, paths), `pull_request` (branches, paths), `pull_request_target`, `pull_request_review`, `pull_request_review_comment`, `issue_comment` (created, edited, deleted), `deployment_status`, `repository_dispatch` (with `types`), `schedule`, `workflow_call`, `workflow_dispatch` (with inputs), `workflow_run`, `merge_group`
+`push` (branches, tags, paths), `pull_request` (branches, paths), `pull_request_target`, `pull_request_review`, `pull_request_review_comment`, `issue_comment` (created, edited, deleted), `discussion` (with `types`), `delete`, `deployment_status`, `repository_dispatch` (with `types`), `schedule`, `workflow_call`, `workflow_dispatch` (with inputs), `workflow_run`, `merge_group`
 
 `issue_comment` covers comments on issues and pull requests. The workflow runs from the repository's default branch. Use `github.event.issue.pull_request` to distinguish pull request comments. Issue edits and label changes use the separate unsupported `issues` trigger.
+
+`discussion` accepts these `types`: `created`, `edited`, `deleted`, `transferred`, `pinned`, `unpinned`, `labeled`, `unlabeled`, `locked`, `unlocked`, `category_changed`, `answered`, and `unanswered`. Omit `types` to accept all activities. Approve the Discussions permission on the Depot Code Access installation to receive these events.
+
+`delete` runs when a branch or tag is deleted and accepts no filters. GitHub does not send an event when more than three tags are deleted at once. Both `discussion` and `delete` run the default-branch workflow at its latest commit. Read payloads from `github.event`; for deletion, `github.event.ref` names the deleted ref and `github.event.ref_type` identifies a branch or tag.
 
 `pull_request_review` handles `submitted`, `edited`, and `dismissed` reviews. `pull_request_review_comment` handles `created`, `edited`, and `deleted` comments on a pull request diff. Use `types` to filter activities; omitting `types` accepts every activity. The listening workflow must exist on the default branch, but the run uses the pull request's merge ref. Read payloads from `github.event`; `github.base_ref` and `github.head_ref` are empty. Fork review runs and review runs triggered by Dependabot receive no user secrets and a read-only `GITHUB_TOKEN`.
 
@@ -44,13 +48,13 @@ For private or internal sources, the caller must be a trusted private repository
 
 ### Permissions
 
-`actions`, `checks`, `code-quality`, `contents`, `id-token`, `issues`, `packages`, `pull-requests`, `security-events`, `statuses`
+`actions`, `checks`, `code-quality`, `contents`, `discussions`, `id-token`, `issues`, `packages`, `pull-requests`, `security-events`, `statuses`
 
 Use the hyphenated `pull-requests` key. Unknown permission keys are ignored when configuring `GITHUB_TOKEN`; operations that need those permissions can still fail.
 
-For `issues: read` or `issues: write`, approve the corresponding Issues permission on the Depot Code Access installation. Without that grant, job tokens can omit `issues`, and issue operations fail.
+For `issues` or `discussions`, approve the requested read or write permission on the Depot Code Access installation. Without that grant, job tokens can omit the permission, and operations that require it fail.
 
-Request `code-quality` explicitly. The `read-all` and `write-all` shorthands do not include it, which preserves compatibility with older Depot Code Access GitHub App installations.
+Request `code-quality`, `issues`, and `discussions` explicitly. The `read-all` and `write-all` shorthands exclude these permissions to preserve compatibility with older Depot Code Access installations.
 
 ### Expressions
 
@@ -69,7 +73,7 @@ Actions declaring Node 12, 16, or 20 run on Node.js 24 by default. `ACTIONS_ALLO
 - **Fork-triggered PRs**: `pull_request` and `pull_request_target` from forks not supported yet.
 - **Non-Ubuntu runners**: Depot CI has no Windows or macOS sandboxes. Do not assume a migrated runner label preserves the original operating system.
 - **Deployment environments**: the `environment` field is not supported.
-- **GitHub-specific event triggers**: `branch_protection_rule`, `check_run`, `check_suite`, `create`, `delete`, `deployment`, `discussion`, `discussion_comment`, `fork`, `gollum`, `image_version`, `issues`, `label`, `milestone`, `page_build`, `public`, `pull_request_comment`, `registry_package`, `release`, `status`, `watch`.
+- **GitHub-specific event triggers**: `branch_protection_rule`, `check_run`, `check_suite`, `create`, `deployment`, `discussion_comment`, `fork`, `gollum`, `image_version`, `issues`, `label`, `milestone`, `page_build`, `public`, `pull_request_comment`, `registry_package`, `release`, `status`, `watch`.
 
 ### GitHub Packages authentication
 

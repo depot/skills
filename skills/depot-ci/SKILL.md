@@ -349,7 +349,7 @@ steps:
 
 Completed GitHub checks include errors, annotations, step summaries from `$GITHUB_STEP_SUMMARY`, and artifact links to the Depot job. Use workflow commands such as `::error file=src/example.ts,line=10::Expected a value` for inline annotations. Checks truncate large output; open the Depot job for full summaries and artifacts.
 
-If GitHub API limits delay check updates, organization owners can connect **Depot Checks**, **Depot Checks 2**, and **Depot Checks 3** under Settings → Connections → GitHub Checks. Depot Code Access must already be connected. Give the checks apps access to the same repositories. If an approved connection remains pending, use **Finish connecting**.
+If GitHub API limits delay check updates, organization owners can connect **Depot Checks** through **Depot Checks 5** under Settings → Connections → GitHub Checks. Depot Code Access must already be connected. Give the checks apps access to the same repositories. If an approved connection remains pending, use **Finish connecting**.
 
 Before adding checks apps, set required Depot check sources to **Any source**, because multiple apps can publish the same name. **Any source** also permits other repository writers to satisfy that name. Keep a pinned source and skip additional apps when app-specific trust is required. Existing checks stay with their original app and can still encounter its rate limit.
 
@@ -428,9 +428,9 @@ Depot CI executes GitHub Actions YAML workflows. There are a few limitations whe
 Read the compatibility reference when you need to answer or act on any of the following or similar questions:
 
 - Whether a specific workflow-, job-, or step-level field is supported, for example `concurrency`, `jobs.<id>.environment`, `jobs.<id>.snapshot`, `jobs.<id>.container`, `jobs.<id>.services`, `jobs.<id>.strategy.matrix`, `steps[*].shell`.
-- Whether a trigger event is accepted: the supported list (`push`, `pull_request`, `pull_request_target`, `pull_request_review`, `pull_request_review_comment`, `issue_comment`, `deployment_status`, `repository_dispatch`, `schedule`, `workflow_call`, `workflow_dispatch`, `workflow_run`, `merge_group`) and the GitHub-only events Depot CI rejects (for example, `release`, `issues`, `deployment`, `branch_protection_rule`).
+- Whether a trigger event is accepted: the supported list (`push`, `pull_request`, `pull_request_target`, `pull_request_review`, `pull_request_review_comment`, `issue_comment`, `discussion`, `delete`, `deployment_status`, `repository_dispatch`, `schedule`, `workflow_call`, `workflow_dispatch`, `workflow_run`, `merge_group`) and the GitHub-only events Depot CI rejects (for example, `release`, `issues`, `deployment`, `branch_protection_rule`).
 - Which expression contexts (`github`, `env`, `vars`, `secrets`, `needs`, `strategy`, `matrix`, `steps`, `job`, `runner`, `inputs`, `depot`) and functions (`always()`, `success()`, `failure()`, `cancelled()`, `case()`, `contains()`, `startsWith()`, `endsWith()`, `format()`, `join()`, `toJSON()`, `fromJSON()`, `hashFiles()`) are available.
-- Which `permissions` scopes work (`actions`, `checks`, `code-quality`, `contents`, `id-token`, `issues`, `packages`, `pull-requests`, `security-events`, `statuses`). Request `code-quality` explicitly because `read-all` and `write-all` do not include it.
+- Which `permissions` scopes work (`actions`, `checks`, `code-quality`, `contents`, `discussions`, `id-token`, `issues`, `packages`, `pull-requests`, `security-events`, `statuses`). Request `code-quality`, `issues`, and `discussions` explicitly because `read-all` and `write-all` exclude them.
 - Which action types run (JavaScript Node 12/16/20/24, Composite, Docker).
 - Which `runs-on` Depot runner labels and sandbox sizes Depot CI supports (x86_64 and Arm only, no macOS nor Windows), and how unrecognized labels are treated.
 - Diagnosing why `depot ci migrate` auto-disabled a job, stripped a trigger from `on:`, or remapped a `runs-on` label.

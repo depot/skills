@@ -323,6 +323,12 @@ depot configure-docker --uninstall  # Remove
 |`depot/use-action@v1`       |Set Depot as default Docker Buildx builder                  |
 |`depot/pull-action@v1`      |Pull from Depot Registry                                    |
 
+## Usage Analysis
+
+Use `depot usage series` for daily usage and period totals, and `depot usage breakdown` to attribute usage to projects, repositories, workflows, runners, or jobs. Supply an organization API token through `DEPOT_TOKEN` or `--token`; read-only organization tokens work. The token selects the organization, not `org switch`, and stored login tokens are not supported.
+
+Read `references/usage-analysis.md` for time ranges, filters, pagination, and interpretation before comparing usage or reporting totals.
+
 ## API Access
 
 Protocol: Connect framework (gRPC + HTTP JSON). SDKs: `@depot/sdk-node` (Node.js), `depot/depot-go` (Go).
