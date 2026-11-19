@@ -4,7 +4,8 @@ description: >
   Use for Depot setup and account tasks that are not specific to one Depot product. Use when the user
   wants to install the Depot CLI, sign in with `depot login`, choose an organization, create or change
   Depot projects, set up `depot.json`, manage API tokens or OIDC trust policies, read invoices, usage,
-  or credits, redeem a credit code, reset a build cache, search the Depot documentation, or use the
+  or credits, redeem a credit code, reset a build cache, configure Go or Rust compiler caches
+  (`depot gocache`, `depot cargo`), search the Depot documentation, or use the
   Depot API and SDKs. Covers the `depot` CLI and the Depot MCP tools, such as `list_projects`,
   `list_trust_policies`, `list_invoices`, `get_current_period_usage`, and `search_docs`. For container
   builds, GitHub Actions runners, or Depot CI, use the matching Depot skill.
@@ -250,6 +251,8 @@ Read finalized invoices with `depot org invoices list`, `depot org invoices get 
 
 Both invoice listings accept `--page-size` (1–100, default 50) and `--page-token`. Continue with `nextPageToken` until absent, even after an empty page. Results include finalized invoices from previous or canceled subscriptions and standalone invoices.
 
+`depot usage` reads recorded usage and UTC daily series as JSON: `series` (daily usage and period totals), `breakdown` (by project, repository, workflow, job, or runner), `report` (structured export rows), `current` (billing-period usage), and `agents` (agent sandbox usage). It requires an organization API token — read-only tokens supported — through `--token` or `DEPOT_TOKEN`; `depot login` user tokens are not accepted, and values are usage quantities rather than invoice amounts.
+
 Billing is per-organization. Configure usage caps, OIDC trust relationships, GitHub App connections, and cloud connections from org settings.
 
 ### Command Triage for Multi-Org Users
@@ -312,6 +315,23 @@ depot cache reset --project <id>
 depot configure-docker              # Install Depot as Docker plugin + default builder
 depot configure-docker --uninstall  # Remove
 ```
+
+### Language toolchain caches
+
+Depot Cache also backs Go and Rust compiler caches outside container builds:
+
+```bash
+# Go: remote compiler cache through the GOCACHEPROG protocol
+go env -w GOCACHEPROG="depot gocache"        # persistent setting
+GOCACHEPROG="depot gocache" go build ./...   # per-command
+
+# Rust: wrap cargo with sccache pointed at Depot Cache
+cargo install sccache                        # prerequisite
+depot cargo build --release
+depot cargo --org <org-id> test
+```
+
+`depot gocache` requires `depot login` or a token (`--token`/`DEPOT_TOKEN`), defaults to the current organization (`-o`/`--organization` to override), and keeps a local disk layer under `--dir` (defaults to `GOCACHE` when set, else the user cache directory). `depot cargo` requires `sccache` on `PATH` and a long-lived token — it rejects managed-run tokens, so pass `DEPOT_TOKEN` or `DEPOT_CACHE_TOKEN`. Both honor `DEPOT_CACHE_HOST` (default `https://cache.depot.dev`).
 
 ## GitHub Actions: Depot Actions Reference
 
