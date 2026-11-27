@@ -198,12 +198,6 @@ depot ci dispatch --repo depot/cli --workflow deploy.yml --ref main --output jso
 
 The `depot.actor` context identifies who created the run; `depot.triggering_actor` identifies who started the current attempt, including retries and reruns. Both expose `kind`, `id`, `email`, and `name`. Actor kinds are `user`, `organization_token`, `service`, and `github`; only users have an email. The corresponding environment variables are `DEPOT_ACTOR_KIND`, `DEPOT_ACTOR_ID`, `DEPOT_ACTOR_EMAIL`, `DEPOT_ACTOR_NAME`, `DEPOT_TRIGGERING_ACTOR_KIND`, `DEPOT_TRIGGERING_ACTOR_ID`, `DEPOT_TRIGGERING_ACTOR_EMAIL`, and `DEPOT_TRIGGERING_ACTOR_NAME`. GitHub actor contexts retain their GitHub meaning.
 
-## Network Policies
-
-When network policies are enabled for the organization, an organization owner can create an outbound allow/deny profile under Settings → Network policies. Assign the profile under **CI workflows** to apply it to new jobs. Workflow overrides take precedence over repository overrides, then the organization default. Running jobs keep their original profile revision.
-
-Inspect the job's **Network** tab for recorded destinations, decisions, and the applied profile. Review existing traffic before assigning a default-deny profile. See https://depot.dev/docs/network-policies for rule formats and profile configuration.
-
 ## Custom Images
 
 Build a custom image once and reuse it across jobs to skip repeated setup steps. A custom image is a snapshot of a Depot CI sandbox, stored in your org's Depot registry, that any job in any workflow can reference by name.

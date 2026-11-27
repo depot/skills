@@ -3,7 +3,7 @@ name: depot-github-runners
 description: >
   Use for GitHub Actions jobs that run on Depot runners. Use when the user wants to set up Depot
   runners, choose a runner label and size, use Ubuntu, Arm, Windows, or macOS runners, or set up Depot
-  Cache, network policies, Tailscale, or Dependabot. Also use to find, read, and debug these jobs,
+  Cache, Tailscale, or Dependabot. Also use to find, read, and debug these jobs,
   their logs, test results, CPU and memory use, and job analytics, and when the user mentions
   `depot-ubuntu`, `depot-windows`, or `depot-macos` labels or `depot jobs`. Covers the `depot` CLI and
   the Depot MCP tools, such as `list_github_actions_jobs`, `search_github_actions_logs`, and
@@ -159,16 +159,6 @@ Cache behavior: repository-scoped, no branch isolation, encrypted, up to 1000 Mi
 To disable auto-cache: org settings → turn off "Allow Actions jobs to automatically connect to Depot Cache."
 
 For Xcode, the runner sets `XCODE_XCCONFIG_FILE` only when the job does not supply its own configuration file. Set `DEPOT_XCODE_CACHE_ENABLED: '0'` to opt out for a job or workflow. Add `depot/xcode-compilation-cache-summary@v1` after the build to report cache statistics. Xcode compilation caching is not supported on local workstations. See https://depot.dev/docs/cache/integrations/xcode for build settings and troubleshooting.
-
-## Network Policies
-
-As an organization owner, open Settings → Network policies to create an outbound allow/deny profile. Assign the profile under **CI workflows**: a workflow override takes precedence over a repository override, then the organization default. Creating a profile alone does not apply it.
-
-Rules match hostnames, domains such as `*.example.com` (including the apex domain), IP addresses, or CIDRs. Required Depot-managed destinations are always allowed; otherwise deny rules take precedence over allow rules, then the default action applies. New jobs use the latest profile revision; running jobs keep their original revision.
-
-Enforcement depends on the runner backend and organization availability. EC2 enforcement supports Linux only. Pooled macOS sandbox runners use the organization default, not repository or workflow overrides. Inspect the job's **Network** tab and applied profile before relying on a restriction. Review organization-wide **Network Logs** before assigning a default-deny profile.
-
-See https://depot.dev/docs/network-policies for profile configuration and network logs.
 
 ## Access Private Endpoints with Tailscale
 
