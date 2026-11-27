@@ -3,7 +3,7 @@ name: depot-github-runners
 description: >
   Use for GitHub Actions jobs that run on Depot runners. Use when the user wants to set up Depot
   runners, choose a runner label and size, use Ubuntu, Arm, Windows, or macOS runners, or set up Depot
-  Cache, egress rules, Tailscale, or Dependabot. Also use to find, read, and debug these jobs,
+  Cache, network policies, Tailscale, or Dependabot. Also use to find, read, and debug these jobs,
   their logs, test results, CPU and memory use, and job analytics, and when the user mentions
   `depot-ubuntu`, `depot-windows`, or `depot-macos` labels or `depot jobs`. Covers the `depot` CLI and
   the Depot MCP tools, such as `list_github_actions_jobs`, `search_github_actions_logs`, and
@@ -98,13 +98,14 @@ Same sizes and pricing as Intel. Add `-arm` suffix:
 Windows Server 2022 also available: `depot-windows-2022`, etc.
 **Windows limitation:** No Hyper-V (AWS EC2 limitation), so Docker workloads that require it are unlikely to work.
 
-### macOS (Apple M2 on macOS 14/15, M4 on macOS 26)
+### macOS (Apple M2 on macOS 15, M4 on macOS 26)
 
-| Label | CPUs | RAM | Disk | $/min |
-|-------|------|-----|------|-------|
-| `depot-macos-26` / `depot-macos-latest` | 8 | 24 GB | 400 GB | $0.08 |
-| `depot-macos-15` | 8 | 24 GB | 400 GB | $0.08 |
-| `depot-macos-14` | 8 | 24 GB | 400 GB | $0.08 |
+| Label | Disk | $/min |
+|-------|------|-------|
+| `depot-macos-26` / `depot-macos-latest` | 400 GB | $0.08 |
+| `depot-macos-15` | 400 GB | $0.08 |
+
+For current job CPU and memory allocations, see https://depot.dev/docs/github-actions/runner-types#macos-runners. macOS 14 is no longer available; replace `depot-macos-14` with a supported label.
 
 macOS is NOT fully elastic — fixed pool with FIFO queuing.
 
@@ -159,9 +160,15 @@ To disable auto-cache: org settings → turn off "Allow Actions jobs to automati
 
 For Xcode, the runner sets `XCODE_XCCONFIG_FILE` only when the job does not supply its own configuration file. Set `DEPOT_XCODE_CACHE_ENABLED: '0'` to opt out for a job or workflow. Add `depot/xcode-compilation-cache-summary@v1` after the build to report cache statistics. Xcode compilation caching is not supported on local workstations. See https://depot.dev/docs/cache/integrations/xcode for build settings and troubleshooting.
 
-## Egress Filtering (Linux Only)
+## Network Policies
 
-Configure in org settings → GitHub Actions Runners → Egress Rules. Set default rule to Allow or Deny, then add specific allow/deny rules for IPs, CIDRs, or hostnames. Deny rules take precedence over Allow rules. Loopback traffic (127.0.0.1, ::1) is always allowed, and Depot auto-allowlists depot.dev domains, GitHub Actions service IPs, and AWS service IPs. Hostnames in rules are resolved and pinned in `/etc/hosts`. Container builds with `depot build` work with egress filtering enabled — Depot adds BuildKit machine IPs to the allowlist as they're allocated. Not supported on macOS or Windows. Incompatible with Tailscale.
+As an organization owner, open Settings → Network policies to create an outbound allow/deny profile. Assign the profile under **CI workflows**: a workflow override takes precedence over a repository override, then the organization default. Creating a profile alone does not apply it.
+
+Rules match hostnames, domains such as `*.example.com` (including the apex domain), IP addresses, or CIDRs. Required Depot-managed destinations are always allowed; otherwise deny rules take precedence over allow rules, then the default action applies. New jobs use the latest profile revision; running jobs keep their original revision.
+
+Enforcement depends on the runner backend and organization availability. EC2 enforcement supports Linux only. Pooled macOS sandbox runners use the organization default, not repository or workflow overrides. Inspect the job's **Network** tab and applied profile before relying on a restriction. Review organization-wide **Network Logs** before assigning a default-deny profile.
+
+See https://depot.dev/docs/network-policies for profile configuration and network logs.
 
 ## Access Private Endpoints with Tailscale
 
@@ -253,7 +260,6 @@ steps:
 |Error                                       |Fix                                                                                                |
 |--------------------------------------------|---------------------------------------------------------------------------------------------------|
 |"No space left on device"                   |OS uses ~70 GB disk; upgrade to larger runner or clean disk in workflow                            |
-|"Failed to open the device 'kvm'" / "Could not access KVM kernel module"|Runners don't provide `/dev/kvm`; move KVM/QEMU/Android-emulator jobs to Depot CI, where nested virtualization is enabled by default|
 |"Lost communication with server"            |Check status.depot.dev; check org usage caps                                                       |
 |"Operation was canceled"                    |Manual cancel, concurrency cancel-in-progress, or OOM — check memory in dashboard                  |
 |"Unable to get ACTIONS_ID_TOKEN_REQUEST_URL"|Dependabot doesn't support OIDC — use `DEPOT_TOKEN` secret                                         |

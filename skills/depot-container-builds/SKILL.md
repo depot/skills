@@ -72,7 +72,7 @@ depot build -t repo/image:tag . --push
 # Multi-platform build (native CPUs, no emulation)
 depot build --platform linux/amd64,linux/arm64 -t repo/image:tag . --push
 
-# Save to Depot ephemeral registry (7-day default, configurable per repository)
+# Save to Depot Registry (retention configured in project settings)
 depot build --save .
 depot build --save --save-tag my-tag .
 
@@ -301,7 +301,7 @@ docker login {orgId}.registry.depot.dev -u x-token
 # (the legacy registry.depot.dev/<project-id>:<build-id> form still works for existing usage)
 ```
 
-Image retention defaults to 7 days but is configurable per repository from the Registry Explorer, either by age (1, 7, 14, or 30 days) or by tag count (5, 10, 25, 50, or 100 tags).
+For images saved with `depot build --save`, configure Image Retention Policy in project settings: 1, 7, 14, or 30 days, or Unlimited (the default). For other repositories, configure tagged-manifest retention in repository settings: 1–30 days or the most recent 1–1000 images.
 
 For custom image names, use a registry access token. Organization owners create tokens in Registry Settings → Registry access tokens. Select Pull or Push permission; Push includes pull access. Scope tokens to exact paths (`frontend`), one level (`team/*`), any depth (`team/**`), or all repositories (`**`). Exclude registry hostnames and image tags from scopes.
 

@@ -252,6 +252,8 @@ Both invoice listings accept `--page-size` (1–100, default 50) and `--page-tok
 
 Billing is per-organization. Configure usage caps, OIDC trust relationships, GitHub App connections, and cloud connections from org settings.
 
+For an active self-service Stripe subscription, an organization owner can schedule cancellation under General settings → Danger Area → Cancel subscription. The subscription stays active until the billing period ends. Use Keep subscription there to undo pending cancellation; contact support for Business plans or other billing providers.
+
 ### Command Triage for Multi-Org Users
 
 If a user belongs to multiple organizations and reports "missing" projects, workflows, or runs, verify Depot org context first:
